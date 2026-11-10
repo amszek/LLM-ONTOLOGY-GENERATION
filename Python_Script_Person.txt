@@ -1,0 +1,559 @@
+"""
+================================================================================
+ Multi-Level Theory (MLT) Person Domain Ontology Benchmark
+ Standard: Gold_Person.owl (100% Ground Truth Standard)
+ Evaluates 12 Ontologies across 4 Prompt Paradigms & 3 LLMs:
+  - Paradigms: Zero-Shot (ZS), Few-Shot (FS), Role+Zero-Shot (R+ZS), Role+Few-Shot (R+FS)
+  - Models: Google Gemini, DeepSeek, Microsoft Copilot
+
+ Evaluation Dimensions:
+  1. Information Retrieval (IR) Metrics:
+     - Triples Count, True Positives (TP), False Positives (FP), False Negatives (FN)
+     - Precision (%), Recall (%), F1-Score (%), Class Discovery Recall (%)
+  2. Multi-Level Semantic Correctness (5 Criteria):
+     - Criterion 1: Abstraction-Level Correctness
+     - Criterion 2: Meta-Class Correctness
+     - Criterion 3: Intra-Level Semantic Correctness
+     - Criterion 4: Cross-Level Semantic Correctness
+     - Criterion 5: Structural Completeness
+================================================================================
+"""
+
+import os
+import re
+import sys
+import shutil
+import rdflib
+from rdflib import RDF, RDFS, OWL
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Smart backend detection: inline for notebooks, Agg for terminal/headless
+try:
+    get_ipython().run_line_magic('matplotlib', 'inline')
+except Exception:
+    import matplotlib
+    matplotlib.use('Agg')
+
+WORKSPACE = r"C:\LLM_Ontology"
+GOLD_PATH = os.path.join(WORKSPACE, "Gold_Person.owl")
+PLOT_OUTPUT = os.path.join(WORKSPACE, "person_ontology_evaluation.png")
+ARTIFACT_DIR = r"C:\Users\amsze\.gemini\antigravity\brain\1651a449-721b-4c60-9418-49a6d703f57a"
+
+BENCHMARK_FILES = {
+    "Zero-Shot": {
+        "Gemini": os.path.join(WORKSPACE, "Zero_Gemini_3.owl"),
+        "DeepSeek": os.path.join(WORKSPACE, "Zero_DeepSeek_3.owl"),
+        "Copilot": os.path.join(WORKSPACE, "Zero_Copilot_3.owl"),
+    },
+    "Few-Shot": {
+        "Gemini": os.path.join(WORKSPACE, "Fs_Gemini_3.owl"),
+        "DeepSeek": os.path.join(WORKSPACE, "Fs_DeepSeek_3.owl"),
+        "Copilot": os.path.join(WORKSPACE, "Fs_Copilot_3.owl"),
+    },
+    "Role+Zero-Shot": {
+        "Gemini": os.path.join(WORKSPACE, "R+Zs_Gemini_3.owl"),
+        "DeepSeek": os.path.join(WORKSPACE, "R+Zs_DeepSeek_3.owl"),
+        "Copilot": os.path.join(WORKSPACE, "R+Zs_Copilot_3.owl"),
+    },
+    "Role+Few-Shot": {
+        "Gemini": os.path.join(WORKSPACE, "R+Fs_Gemini_3.owl"),
+        "DeepSeek": os.path.join(WORKSPACE, "R+Fs_DeepSeek_3.owl"),
+        "Copilot": os.path.join(WORKSPACE, "R+Fs_Copilot_3.owl"),
+    }
+}
+
+# ------------------------------------------------------------------------------
+# 1. Parsing & Normalization Utilities
+# ------------------------------------------------------------------------------
+
+SYNONYMS = {
+    'FirstOrderClass': '1stOrderClass',
+    'SecondOrderClass': '2ndOrderClass',
+    'ThirdOrderClass': '3rdOrderClass',
+    'FirstOrderType': '1stOrderClass',
+    'SecondOrderType': '2ndOrderClass',
+    'ThirdOrderType': '3rdOrderClass',
+    'isPowerTypeOf': 'isPowertypeOf',
+    'isSubordinateTo': 'isSubordinateOf',
+    'isSubordinationOf': 'isSubordinateOf',
+    'subclassof': 'subClassOf',
+    'TokenIndividualClass': 'TokenIndividual',
+    'Token': 'TokenIndividual'
+}
+
+CLASS_SPECIFIERS = {
+    'Class', '3rdOrderClass', '2ndOrderClass', '1stOrderClass',
+    'ThirdOrderType', 'SecondOrderType', 'FirstOrderType', 'TokenIndividual'
+}
+
+GOLD_LEVELS = {
+    # Level 0 (Token Individuals)
+    'Ana': 0, 'Bob': 0,
+
+    # Level 1 (First-order Domain Classes)
+    'Person': 1, 'Woman': 1, 'Man': 1, 'Manager': 1, 'Researcher': 1,
+    'FemaleManager': 1, 'MaleManager': 1, '1stOrderClass': 1, 'TokenIndividual': 1,
+
+    # Level 2 (Second-order Metaclasses / Types of Types)
+    'PersonType': 2, 'PersonTypeByGender': 2, 'EmployeeType': 2,
+    'EmployeeRoleTypeByGender': 2, '2ndOrderClass': 2,
+
+    # Level 3 (Third-order Classes)
+    '3rdOrderClass': 3
+}
+
+GOLD_METACLASSES = {
+    'PersonType', 'PersonTypeByGender', 'EmployeeType',
+    'EmployeeRoleTypeByGender', '2ndOrderClass', '3rdOrderClass'
+}
+
+def local_name(term):
+    s = str(term)
+    if '#' in s:
+        return s.split('#')[-1]
+    return s.split('/')[-1]
+
+def norm_name(term):
+    name = local_name(term)
+    return SYNONYMS.get(name, name)
+
+def clean_turtle_source(text):
+    """Sanitize syntax quirks, unbracketed URIs, LLM web artifacts, and unhashed headers."""
+    cleaned = re.sub(r'\([^\)]*in\s+Bing\)', '', text)
+    # Fix @prefix without brackets (with or without space after colon)
+    cleaned = re.sub(r'@prefix\s+([a-zA-Z0-9_\-]*:)\s*(https?://[^\s<>]+)\s*\.', r'@prefix \1 <\2> .', cleaned)
+    # Wrap ontology URI if unbracketed
+    cleaned = re.sub(r'(?m)^(https?://[^\s<>]+)\s+', r'<\1> ', cleaned)
+    header_keywords = [
+        'Classes', 'Object Properties', 'Axioms', 'Individuals?', 'MLT Core Classes',
+        'MLT meta-classes', 'MLT object properties', 'Domain classes', 'Person.*', 'Roles.*',
+        'Meta-Classes'
+    ]
+    for hk in header_keywords:
+        cleaned = re.sub(rf'(?m)^({hk})\s*$', r'# \1', cleaned)
+    cleaned = re.sub(r'(#{5,}\s*\n)([A-Za-z][A-Za-z0-9_\s\-]+)(\n\s*#{5,})', r'\1# \2\3', cleaned)
+    return cleaned
+
+def extract_attempts(filepath):
+    """Extract individual prompt attempts from multi-attempt LLM files."""
+    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+        text = f.read()
+
+    chunks = re.split(r'(?i)(?:First|Second)\s+(?:Test|Attempt)', text)
+    markers = re.findall(r'(?i)(?:First|Second)\s+(?:Test|Attempt)', text)
+    attempts = {}
+
+    if markers and len(chunks) > 1:
+        for m, c in zip(markers, chunks[1:]):
+            cleaned = clean_turtle_source(c.strip())
+            if len(cleaned) > 50:
+                label = "Attempt 1" if "first" in m.lower() else "Attempt 2"
+                attempts[label] = cleaned
+    else:
+        cleaned = clean_turtle_source(text.strip())
+        if len(cleaned) > 50:
+            attempts['Attempt 1'] = cleaned
+
+    return attempts
+
+# ------------------------------------------------------------------------------
+# 2. Five-Criteria Person Domain Semantic Evaluator
+# ------------------------------------------------------------------------------
+
+class PersonSemanticEvaluator:
+    """Evaluates semantic correctness and completeness across the 5 formal MLT criteria for Person domain."""
+
+    def __init__(self, graph, name="Ontology"):
+        self.g = graph
+        self.name = name
+
+    def evaluate(self, gold_g):
+        scores = {}
+        violations = []
+
+        # ----------------------------------------------------------------------
+        # Criterion 1: Abstraction-Level Correctness
+        # ----------------------------------------------------------------------
+        total_entities = 0
+        correct_abstractions = 0
+        named_inds = set(norm_name(s) for s, _, o in self.g.triples((None, RDF.type, OWL.NamedIndividual)))
+        all_terms = set(norm_name(s) for s in self.g.subjects()).union(
+            set(norm_name(o) for s, p, o in self.g if norm_name(p) in ['type', 'subClassOf'])
+        )
+
+        for term in all_terms:
+            if term in ['Class', 'ObjectProperty', 'NamedIndividual', 'Ontology', 'TransitiveProperty']:
+                continue
+            exp = GOLD_LEVELS.get(term)
+            if exp is not None:
+                total_entities += 1
+                types = set(norm_name(o) for _, p, o in self.g.triples((None, RDF.type, None)) if norm_name(_) == term)
+                is_class = bool(types.intersection(CLASS_SPECIFIERS)) or any(norm_name(o) == 'Class' for _, p, o in self.g.triples((None, RDF.type, None)) if norm_name(_) == term)
+                is_punned = term in named_inds and is_class
+
+                if exp == 0:
+                    if not is_class:
+                        correct_abstractions += 1
+                    else:
+                        violations.append(('1. Abstraction-Level', f"Individual '{term}' (Level 0) mistakenly typed as Class."))
+                elif exp >= 1:
+                    if is_class and not is_punned:
+                        correct_abstractions += 1
+                    elif is_punned:
+                        violations.append(('1. Abstraction-Level', f"Class '{term}' (Level {exp}) punned with NamedIndividual."))
+                    else:
+                        violations.append(('1. Abstraction-Level', f"Class '{term}' (Level {exp}) missing class typing."))
+
+        scores['1. Abstraction-Level'] = (correct_abstractions / total_entities * 100) if total_entities > 0 else 100.0
+
+        # ----------------------------------------------------------------------
+        # Criterion 2: Meta-Class Correctness
+        # ----------------------------------------------------------------------
+        mc_total = 0
+        mc_correct = 0
+
+        # Sub-dimension A: Metaclass instantiation
+        for s, p, o in self.g.triples((None, RDF.type, None)):
+            lo = norm_name(o)
+            ls = norm_name(s)
+            if lo in GOLD_METACLASSES and ls not in ['Class', 'ObjectProperty', 'NamedIndividual']:
+                mc_total += 1
+                types_s = set(norm_name(t) for _, _, t in self.g.triples((s, RDF.type, None)))
+                is_s_class = bool(types_s.intersection(CLASS_SPECIFIERS)) or (ls in GOLD_LEVELS and GOLD_LEVELS[ls] >= 1)
+                is_token = (ls in GOLD_LEVELS and GOLD_LEVELS[ls] == 0)
+                if is_s_class and not is_token:
+                    mc_correct += 1
+                else:
+                    violations.append(('2. Meta-Class Correctness', f"Metaclass '{lo}' instantiated by token '{ls}' instead of a class."))
+
+        # Sub-dimension B: Category Inversion (subClassOf instead of rdf:type)
+        for s, p, o in self.g.triples((None, RDFS.subClassOf, None)):
+            lo = norm_name(o)
+            ls = norm_name(s)
+            if lo in ['PersonType', 'PersonTypeByGender', 'EmployeeType', 'EmployeeRoleTypeByGender']:
+                if ls in ['Woman', 'Man', 'Manager', 'Researcher', 'FemaleManager', 'MaleManager']:
+                    mc_total += 1
+                    violations.append(('2. Meta-Class Correctness', f"Category Inversion: Class '{ls}' declared as rdfs:subClassOf metaclass '{lo}' instead of rdf:type."))
+
+        scores['2. Meta-Class Correctness'] = (mc_correct / mc_total * 100) if mc_total > 0 else 100.0
+
+        # ----------------------------------------------------------------------
+        # Criterion 3: Intra-Level Semantic Correctness
+        # ----------------------------------------------------------------------
+        intra_total = 0
+        intra_correct = 0
+
+        for s, _, o in self.g.triples((None, RDFS.subClassOf, None)):
+            intra_total += 1
+            ls, lo = norm_name(s), norm_name(o)
+            ord_s = GOLD_LEVELS.get(ls)
+            ord_o = GOLD_LEVELS.get(lo)
+            if ord_s is not None and ord_o is not None and ord_s == ord_o and ord_s >= 1:
+                intra_correct += 1
+            else:
+                violations.append(('3. Intra-Level Semantics', f"Cross-level specialization: {ls} (Level {ord_s}) subClassOf {lo} (Level {ord_o})."))
+
+        for s, p, o in self.g:
+            lp = norm_name(p).lower()
+            if 'subordinate' in lp or 'subordination' in lp:
+                intra_total += 1
+                ls, lo = norm_name(s), norm_name(o)
+                ord_s = GOLD_LEVELS.get(ls)
+                ord_o = GOLD_LEVELS.get(lo)
+                if ord_s is not None and ord_o is not None and ord_s == ord_o and ord_s >= 2:
+                    intra_correct += 1
+                else:
+                    violations.append(('3. Intra-Level Semantics', f"Misapplied subordination: {ls} {norm_name(p)} {lo}."))
+
+        scores['3. Intra-Level Semantics'] = (intra_correct / intra_total * 100) if intra_total > 0 else 100.0
+
+        # ----------------------------------------------------------------------
+        # Criterion 4: Cross-Level Semantic Correctness
+        # ----------------------------------------------------------------------
+        cross_total = 0
+        cross_correct = 0
+
+        for s, p, o in self.g:
+            if 'powertype' in norm_name(p).lower():
+                cross_total += 1
+                ls, lo = norm_name(s), norm_name(o)
+                if (ls == 'PersonType' and lo == 'Person') or \
+                   (ls == '3rdOrderClass' and lo == '2ndOrderClass') or \
+                   (ls == '2ndOrderClass' and lo == '1stOrderClass'):
+                    cross_correct += 1
+                else:
+                    violations.append(('4. Cross-Level Semantics', f"Invalid Powertype: {ls} isPowertypeOf {lo}."))
+
+        for s, p, o in self.g:
+            if 'characterization' in norm_name(p).lower():
+                cross_total += 1
+                ls, lo = norm_name(s), norm_name(o)
+                if (ls in ['PersonTypeByGender', 'EmployeeType'] and lo == 'Person') or \
+                   (ls == '3rdOrderClass' and lo == '2ndOrderClass') or \
+                   (ls == '2ndOrderClass' and lo == '1stOrderClass'):
+                    cross_correct += 1
+                else:
+                    violations.append(('4. Cross-Level Semantics', f"Invalid characterization: {ls} isCharacterizationOf {lo}."))
+
+        for s, _, o in self.g.triples((None, RDF.type, None)):
+            lo = norm_name(o)
+            ls = norm_name(s)
+            if lo in ['Class', 'ObjectProperty', 'NamedIndividual', 'Entity', 'Type', 'Ontology', 'TransitiveProperty',
+                      '1stOrderClass', '2ndOrderClass', '3rdOrderClass', 'TokenIndividual']:
+                continue
+            ord_s = GOLD_LEVELS.get(ls)
+            ord_o = GOLD_LEVELS.get(lo)
+            if ord_s is not None and ord_o is not None:
+                cross_total += 1
+                if ord_s == ord_o - 1:
+                    cross_correct += 1
+                else:
+                    violations.append(('4. Cross-Level Semantics', f"Order leap in instantiation: {ls} (Level {ord_s}) rdf:type {lo} (Level {ord_o})."))
+
+        scores['4. Cross-Level Semantics'] = (cross_correct / cross_total * 100) if cross_total > 0 else 100.0
+
+        # ----------------------------------------------------------------------
+        # Criterion 5: Structural Completeness & IR Metrics
+        # ----------------------------------------------------------------------
+        gold_triples = set((norm_name(s), norm_name(p), norm_name(o)) for s, p, o in gold_g)
+        test_triples = set((norm_name(s), norm_name(p), norm_name(o)) for s, p, o in self.g)
+        gold_classes = set(norm_name(s) for s, p, o in gold_g if norm_name(p) == 'type' and norm_name(o) == 'Class')
+        test_classes = set(norm_name(s) for s, p, o in self.g if norm_name(p) == 'type' and norm_name(o) == 'Class')
+
+        tp = gold_triples.intersection(test_triples)
+        fp = test_triples - gold_triples
+        fn = gold_triples - test_triples
+
+        prec = len(tp) / len(test_triples) * 100 if test_triples else 0.0
+        rec = len(tp) / len(gold_triples) * 100 if gold_triples else 0.0
+        f1 = 2 * (prec * rec) / (prec + rec) if (prec + rec) else 0.0
+
+        tp_c = gold_classes.intersection(test_classes)
+        rec_c = len(tp_c) / len(gold_classes) * 100 if gold_classes else 0.0
+
+        scores['5. Structural Completeness'] = (rec + rec_c) / 2.0
+
+        ir_metrics = {
+            'triples': len(test_triples),
+            'tp': len(tp),
+            'fp': len(fp),
+            'fn': len(fn),
+            'precision': prec,
+            'recall': rec,
+            'f1': f1,
+            'class_recall': rec_c,
+            'classes_found': len(tp_c),
+            'total_gold_classes': len(gold_classes)
+        }
+
+        return scores, ir_metrics, violations
+
+# ------------------------------------------------------------------------------
+# 3. Benchmark Controller
+# ------------------------------------------------------------------------------
+
+def run_person_benchmark():
+    print("=" * 115)
+    print(" MULTI-LEVEL THEORY (MLT) PERSON ONTOLOGY BENCHMARK: 4 STRATEGIES x 3 LLMS (12 FILES)")
+    print(" Reference Standard: Gold_Person.owl (60 Triples, 15 Classes, 100% Ground Truth)")
+    print("=" * 115)
+
+    g_gold = rdflib.Graph()
+    g_gold.parse(GOLD_PATH, format="turtle")
+
+    eval_gold = PersonSemanticEvaluator(g_gold, "Gold_Person.owl")
+    gold_scores, gold_ir, gold_viols = eval_gold.evaluate(g_gold)
+
+    print("\n[GROUND TRUTH VALIDATION - Gold_Person.owl]")
+    for c, val in gold_scores.items():
+        print(f"  * {c:<36}: {val:>6.1f}%")
+    print(f"  * Triples: {gold_ir['triples']} | Violations: {len(gold_viols)} (Standard Satisfied 100%)\n")
+
+    benchmark_results = {}
+
+    for strat, models in BENCHMARK_FILES.items():
+        benchmark_results[strat] = {}
+        for mname, fpath in models.items():
+            benchmark_results[strat][mname] = {}
+            attempts = extract_attempts(fpath)
+
+            for alabel, code in attempts.items():
+                g = rdflib.Graph()
+                g.parse(data=code, format="turtle")
+
+                ev = PersonSemanticEvaluator(g, f"{strat}_{mname}_{alabel}")
+                sc, ir, viols = ev.evaluate(g_gold)
+                comp_score = np.mean(list(sc.values()))
+
+                benchmark_results[strat][mname][alabel] = {
+                    "scores": sc,
+                    "ir": ir,
+                    "violations": viols,
+                    "composite": comp_score
+                }
+
+    print_ir_table(benchmark_results)
+    print_semantic_table(benchmark_results, gold_scores)
+    render_person_plots(benchmark_results, gold_scores)
+
+def print_ir_table(results):
+    print("=" * 115)
+    print(" 1. INFORMATION RETRIEVAL (IR) METRICS ACROSS ALL STRATEGIES & MODELS (PERSON DOMAIN)")
+    print("=" * 115)
+    header = f"{'Strategy':<16} | {'Model':<9} | {'Attempt':<9} | {'Triples':<7} | {'TP':<4} | {'FP':<4} | {'FN':<4} | {'Prec. (%)':<9} | {'Rec. (%)':<8} | {'F1 (%)':<7} | {'Class Rec.'}"
+    print(header)
+    print("-" * 115)
+
+    for strat, models in results.items():
+        for mname, atts in models.items():
+            for alabel, d in atts.items():
+                ir = d['ir']
+                row = (f"{strat:<16} | {mname:<9} | {alabel:<9} | {ir['triples']:<7} | {ir['tp']:<4} | {ir['fp']:<4} | {ir['fn']:<4} | "
+                       f"{ir['precision']:>8.1f}% | {ir['recall']:>7.1f}% | {ir['f1']:>6.1f}% | {ir['class_recall']:>5.1f}% ({ir['classes_found']}/15)")
+                print(row)
+
+def print_semantic_table(results, gold_scores):
+    print("\n" + "=" * 115)
+    print(" 2. FIVE MULTI-LEVEL SEMANTIC EVALUATION CRITERIA ACROSS ALL STRATEGIES & MODELS")
+    print("=" * 115)
+    header = f"{'Strategy':<16} | {'Model':<9} | {'Attempt':<9} | {'C1: Abstr.':<10} | {'C2: Meta':<10} | {'C3: Intra':<10} | {'C4: Cross':<10} | {'C5: Struct.':<10} | {'Composite'}"
+    print(header)
+    print("-" * 115)
+
+    for strat, models in results.items():
+        for mname, atts in models.items():
+            for alabel, d in atts.items():
+                sc = d['scores']
+                comp = d['composite']
+                row = (f"{strat:<16} | {mname:<9} | {alabel:<9} | {sc['1. Abstraction-Level']:>9.1f}% | "
+                       f"{sc['2. Meta-Class Correctness']:>9.1f}% | {sc['3. Intra-Level Semantics']:>9.1f}% | "
+                       f"{sc['4. Cross-Level Semantics']:>9.1f}% | {sc['5. Structural Completeness']:>9.1f}% | {comp:>8.1f}%")
+                print(row)
+
+# ------------------------------------------------------------------------------
+# 4. Diagnostic Visualization Generator (Harmonized with Taxonomy & Business)
+# ------------------------------------------------------------------------------
+
+def get_model_attempt(results, s, m):
+    """Robustly select Attempt 2 (iterative refinement), falling back to Attempt 1."""
+    m_dict = results[s][m]
+    return m_dict.get("Attempt 2") or m_dict.get("Attempt 1") or list(m_dict.values())[0]
+
+def render_person_plots(results, gold_scores):
+    fig = plt.figure(figsize=(20, 14), dpi=130)
+    plt.subplots_adjust(hspace=0.4, wspace=0.3)
+
+    strats = ["Zero-Shot", "Few-Shot", "Role+Zero-Shot", "Role+Few-Shot"]
+    models = ["Gemini", "DeepSeek", "Copilot"]
+    c_map = {"Gemini": "#2563eb", "DeepSeek": "#dc2626", "Copilot": "#059669"}
+
+    # --------------------------------------------------------------------------
+    # Panel 1: Triple F1-Score Progression
+    # --------------------------------------------------------------------------
+    ax1 = fig.add_subplot(2, 2, 1)
+    x = np.arange(len(strats))
+    width = 0.25
+
+    for idx, m in enumerate(models):
+        f1_vals = [get_model_attempt(results, s, m)["ir"]["f1"] for s in strats]
+        bars = ax1.bar(x + (idx - 1)*width, f1_vals, width, label=m, color=c_map[m], edgecolor="#1e293b", linewidth=1.1)
+        for b in bars:
+            h = b.get_height()
+            if h > 0:
+                ax1.annotate(f"{h:.1f}%", xy=(b.get_x() + b.get_width()/2, h), xytext=(0, 3),
+                             textcoords="offset points", ha='center', va='bottom', fontsize=8, fontweight='bold')
+
+    ax1.set_ylabel("Triple F1-Score (%)", fontsize=11, fontweight="bold")
+    ax1.set_title("Triple F1-Score Progression (Person Domain)", fontsize=12, fontweight="bold")
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(strats, fontsize=10, fontweight="bold")
+    ax1.set_ylim(0, 95)
+    ax1.legend(loc="upper left")
+    ax1.grid(axis='y', linestyle='--', alpha=0.4)
+
+    # --------------------------------------------------------------------------
+    # Panel 2: Composite Semantic Correctness Score
+    # --------------------------------------------------------------------------
+    ax2 = fig.add_subplot(2, 2, 2)
+    for idx, m in enumerate(models):
+        sem_vals = [get_model_attempt(results, s, m)["composite"] for s in strats]
+        bars = ax2.bar(x + (idx - 1)*width, sem_vals, width, label=m, color=c_map[m], edgecolor="#1e293b", linewidth=1.1)
+        for b in bars:
+            h = b.get_height()
+            ax2.annotate(f"{h:.1f}%", xy=(b.get_x() + b.get_width()/2, h), xytext=(0, 3),
+                         textcoords="offset points", ha='center', va='bottom', fontsize=8, fontweight='bold')
+
+    ax2.set_ylabel("Composite Semantic Score (%)", fontsize=11, fontweight="bold")
+    ax2.set_title("Composite Semantic Correctness Across Prompting Paradigms", fontsize=12, fontweight="bold")
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(strats, fontsize=10, fontweight="bold")
+    ax2.set_ylim(0, 108)
+    ax2.legend(loc="lower right")
+    ax2.grid(axis='y', linestyle='--', alpha=0.4)
+
+    # --------------------------------------------------------------------------
+    # Panel 3: Radar Profile Comparison for Few-Shot and Role-Based Paradigms
+    # --------------------------------------------------------------------------
+    ax3 = fig.add_subplot(2, 2, 3, polar=True)
+    crit_keys = list(gold_scores.keys())
+    short_crits = ["Abstraction", "Meta-Class", "Intra-Level", "Cross-Level", "Structural"]
+    angles = np.linspace(0, 2 * np.pi, len(crit_keys), endpoint=False).tolist()
+    angles += angles[:1]
+
+    def add_radar(ax, vals, label, color, ls='-'):
+        v = vals + vals[:1]
+        ax.plot(angles, v, color=color, linewidth=2, linestyle=ls, label=label)
+        ax.fill(angles, v, color=color, alpha=0.08)
+
+    add_radar(ax3, [gold_scores[k] for k in crit_keys], "Gold (100%)", "#7c3aed", ls='--')
+    add_radar(ax3, [get_model_attempt(results, "Few-Shot", "Gemini")["scores"][k] for k in crit_keys], "Gemini (FS)", "#2563eb")
+    add_radar(ax3, [get_model_attempt(results, "Role+Few-Shot", "Gemini")["scores"][k] for k in crit_keys], "Gemini (R+FS)", "#1d4ed8", ls=':')
+    add_radar(ax3, [get_model_attempt(results, "Role+Few-Shot", "DeepSeek")["scores"][k] for k in crit_keys], "DeepSeek (R+FS)", "#dc2626")
+    add_radar(ax3, [get_model_attempt(results, "Role+Few-Shot", "Copilot")["scores"][k] for k in crit_keys], "Copilot (R+FS)", "#059669")
+
+    ax3.set_xticks(angles[:-1])
+    ax3.set_xticklabels(short_crits, fontsize=9, fontweight="bold")
+    ax3.set_ylim(0, 100)
+    ax3.set_title("Semantic Profile Radar (Person Domain)", fontsize=12, fontweight="bold", pad=20)
+    ax3.legend(loc="upper right", bbox_to_anchor=(1.35, 1.15), fontsize=8)
+
+    # --------------------------------------------------------------------------
+    # Panel 4: Violations Breakdown
+    # --------------------------------------------------------------------------
+    ax4 = fig.add_subplot(2, 2, 4)
+    x_pos = np.arange(len(strats))
+    for idx, m in enumerate(models):
+        v_counts = [len(get_model_attempt(results, s, m)["violations"]) for s in strats]
+        bars = ax4.bar(x_pos + (idx - 1)*width, v_counts, width, label=m, color=c_map[m], edgecolor="#1e293b", linewidth=1.1)
+        for b in bars:
+            h = b.get_height()
+            ax4.annotate(f"{h}", xy=(b.get_x() + b.get_width()/2, h), xytext=(0, 3),
+                         textcoords="offset points", ha='center', va='bottom', fontsize=8, fontweight='bold')
+
+    ax4.set_ylabel("Violation Count", fontsize=11, fontweight="bold")
+    ax4.set_title("Total Detected Violations (Lower is Better)", fontsize=12, fontweight="bold")
+    ax4.set_xticks(x_pos)
+    ax4.set_xticklabels(strats, fontsize=10, fontweight="bold")
+    ax4.legend(loc="upper right")
+    ax4.grid(axis='y', linestyle='--', alpha=0.4)
+
+    plt.suptitle("Multi-Level Theory (MLT) Person Domain Evaluation Benchmark\nStandard: Gold_Person.owl vs. Gemini vs. DeepSeek vs. Copilot across 4 Prompt Paradigms",
+                 fontsize=14, fontweight="bold", y=0.99)
+
+    plt.savefig(PLOT_OUTPUT, bbox_inches='tight')
+    if os.path.exists(ARTIFACT_DIR):
+        shutil.copy2(PLOT_OUTPUT, os.path.join(ARTIFACT_DIR, "person_ontology_evaluation.png"))
+    try:
+        if 'ipykernel' in sys.modules or 'IPython' in sys.modules:
+            plt.show()
+    except Exception:
+        pass
+    plt.close(fig)
+    print(f"\n[OK] Person benchmark visualization saved to: {PLOT_OUTPUT}")
+
+# ------------------------------------------------------------------------------
+# Entrypoint
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    run_person_benchmark()

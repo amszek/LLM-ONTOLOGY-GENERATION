@@ -1,0 +1,470 @@
+                 						  Biological Taxonomy
+
+You are an ontology engineer specializing in OWL 2, Description Logics, Multi-Level Theory (MLT), meta-modeling, and knowledge representation. You have extensive experience in designing semantically correct ontologies that preserve multi-level semantics and conform to OWL 2 standards.
+Your task is to generate a complete OWL 2 ontology in RDF/Turtle syntax that faithfully models the domain described below according to the principles of Multi-Level Theory (MLT).
+The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
+Example Ontology
+@prefix :      <http://example.org/person#> .
+@prefix mlt:   <http://example.org/mlt#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+
+
+#################################################################
+# Classes
+#################################################################
+
+:PersonType
+    rdf:type owl:Class .
+
+:PersonTypeByGender
+    rdf:type owl:Class .
+
+:EmployeeType
+    rdf:type owl:Class .
+
+:EmployeeRoleTypeByGender
+    rdf:type owl:Class .
+
+:Person
+    rdf:type owl:Class .
+
+:Woman
+    rdf:type owl:Class .
+
+:Man
+    rdf:type owl:Class .
+
+:Manager
+    rdf:type owl:Class .
+
+:Researcher
+    rdf:type owl:Class .
+
+:FemaleManager
+    rdf:type owl:Class .
+
+:MaleManager
+    rdf:type owl:Class .
+
+mlt:1stOrderClass
+    rdf:type owl:Class .
+
+mlt:2ndOrderClass
+    rdf:type owl:Class .
+
+mlt:3rdOrderClass
+    rdf:type owl:Class .
+
+mlt:TokenIndividual
+    rdf:type owl:Class .
+
+
+#################################################################
+# Object Properties
+#################################################################
+mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
+
+#################################################################
+# Axioms
+#################################################################
+
+mlt:3rdOrderClass
+    mlt:isPowertypeOf mlt:2ndOrderClass ;
+    mlt:isCharacterizationOf mlt:2ndOrderClass;
+    mlt:isSubordinationOf    mlt:3rdOrderClass.
+
+mlt:2ndOrderClass
+    mlt:isPowertypeOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf mlt:1stOrderClass .
+     mlt:isSubordinationOf    mlt:2ndOrderClass.
+  
+
+:PersonType
+    rdf:type mlt:2ndOrderClass ;
+    mlt:isPowertypeOf :Person ;
+   .
+
+
+:PersonTypeByGender
+    rdf:type mlt:2ndOrderClass ;
+    rdfs: subclassof :PersonType ;
+    mlt:isCharacterizationOf
+        :Person.
+
+
+:EmployeeType
+    rdf:type mlt:2ndOrderClass ;
+    rdfs:subclassof :PersonType ;
+    mlt:isCharacterizationOf
+        :Person.
+        
+
+
+:EmployeeRoleTypeByGender
+    rdf:type mlt:2ndOrderClass ;
+    rdfs:subclassof :EmployeeType ;
+    mlt:isSubordinateOf :PersonTypeByGender ;
+           
+:Person
+    rdf:type mlt:1stOrderClass .
+
+
+:Woman
+    rdf:type :PersonTypeByGender ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Person.
+
+
+:Man
+    rdf:type :PersonTypeByGender ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Person.
+
+
+:Manager
+    rdf:type :EmployeeType ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Person.
+
+
+:Researcher
+    rdf:type :EmployeeType ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Person.
+
+
+:FemaleManager
+    rdf:type :EmployeeRoleTypeByGender ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Manager ;
+    rdfs:subClassOf :Woman .
+
+
+:MaleManager
+    rdf:type :EmployeeRoleTypeByGender ;
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf :Manager ;
+    rdfs:subClassOf :Man .
+
+
+#################################################################
+# Individuals
+#################################################################
+
+:Ana
+    rdf:type owl:NamedIndividual ; 
+    rdf:type :FemaleManager .
+
+
+:Bob
+    rdf:type owl:NamedIndividual ;
+       rdf:type :MaleManager .
+
+
+
+
+
+
+
+
+The example illustrates how to:
+distinguish entities at different abstraction levels;
+represent higher-order and first-order concepts;
+model class-instance duality when required;
+preserve valid multi-level classification structures;
+organize ontology elements using Multi-Level Theory principles.
+New Domain
+Generate a complete OWL 2 ontology in RDF/Turtle syntax that correctly models the following domain according to the principles of Multi-Level Theory (MLT).
+Domain Description
+Construct an ontology representing the biological taxonomy of Panthera. The ontology should model  TaxonomicRank as a class representing the taxonomic levels used in the classification. The taxonomy should include Genus and Species as taxonomic categories, with Panthera represented as a genus and species such as Panthera leo, Panthera tigris, and Panthera onca represented within the taxonomy. The ontology should capture the relationships between TaxonomicRank, Genus, Species, GenusType, SpeciesType, Organism, and the corresponding Panthera classifications.
+
+The generated ontology must satisfy the following requirements:
+Correctly distinguish entities at different abstraction levels, including individuals, first-order classes, second-order classes, and higher-order classes where applicable.
+Represent entities as both OWL classes and OWL individuals whenever required by the domain semantics.
+Use mlt:isSubordinateOf where appropriate.
+Use mlt:isPowertypeOf where appropriate.
+Use mlt:isCharacterizationOf where appropriate.
+Use mlt:TokenIndividual where appropriate.
+Preserve valid multi-level instantiation chains across abstraction levels.
+Include all classes, individuals, object properties, and axioms necessary to faithfully represent the domain.
+Produce a syntactically valid OWL 2 ontology serialized in RDF/Turtle.
+Output Requirements
+Return only the RDF/Turtle ontology.
+Do not include explanations, comments, Markdown formatting, or any text outside the ontology.
+
+
+                                  Organization  Domain
+
+
+
+You are an ontology engineer specializing in OWL 2, Description Logics, Multi-Level Theory (MLT), meta-modeling, and knowledge representation. You have extensive experience in designing semantically correct ontologies that preserve multi-level semantics and conform to OWL 2 standards.
+Your task is to generate a complete OWL 2 ontology in RDF/Turtle syntax that faithfully models the domain described below according to the principles of Multi-Level Theory (MLT).
+The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
+Example Ontology
+@prefix :    <http://example.org/Taxonomy#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+#################################################################
+# Classes
+#################################################################
+
+:TaxonomicRank   rdf:type owl:Class .
+:Genus           rdf:type owl:Class .
+:Species         rdf:type owl:Class .
+:Organism        rdf:type owl:Class .
+:Panthera        rdf:type owl:Class .
+:PantheraSpecies rdf:type owl:Class .
+:PantheraOnca    rdf:type owl:Class .
+:PantheraTigris  rdf:type owl:Class .
+:PantheraLeo     rdf:type owl:Class .
+
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+mlt:TokenIndividual rdf:type owl:Class .
+
+#################################################################
+# Object Properties
+#################################################################
+
+mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
+#################################################################
+# Axioms
+#################################################################
+mlt:3rdOrderClass
+    mlt:isPowertypeOf mlt:2ndOrderClass ;
+    mlt:isCharacterizationOf mlt:2ndOrderClass;
+    mlt:isSubordinationOf    mlt:3rdOrderClass.
+
+mlt:2ndOrderClass
+    mlt:isPowertypeOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf mlt:1stOrderClass .
+     mlt:isSubordinationOf    mlt:2ndOrderClass.
+
+
+:GenusType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Genus .
+
+:SpecieType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Species.
+
+:Genus
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank .
+
+:Species
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank ;
+    mlt:isSubordinateOf :Genus ;
+    mlt:isCharacterizationOf :Organism.
+
+:Organism
+    rdf:type mlt:1stOrderClass .
+    rdfs:subClassOf  mlt:TokenIndividual
+
+:Panthera
+    rdf:type :Genus ;
+    rdfs:subClassOf :Organism .
+
+:PantheraSpecies
+    rdf:type :Species ;
+    rdfs:subClassOf :Organism ;
+    mlt:isCharacterization :Panthera.
+
+:PantheraOnca
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+
+:PantheraTigris
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+
+:PantheraLeo
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+ 
+#################################################################
+#  Individual
+#################################################################
+
+:Cecil
+    rdf:type owl:NamedIndividual ;
+       rdf:type :PantheraLeo .
+
+
+
+
+The example illustrates how to:
+distinguish entities at different abstraction levels;
+represent higher-order and first-order concepts;
+model class-instance duality when required;
+preserve valid multi-level classification structures;
+organize ontology elements using Multi-Level Theory principles.
+New Domain
+Generate a complete OWL 2 ontology in RDF/Turtle syntax that correctly models the following domain according to the principles of Multi-Level Theory (MLT).
+Domain Description
+Construct an ontology representing the organizational structure of a company. The ontology should model Business Role, Management Role, and Employee Type as organizational classification types. It should also include organizational types such as Employee, Programmer, Software Designer, Database Designer, Manager, and Director. The ontology should capture the relationships between these types and their corresponding organizational roles, including how employees can be classified according to business, management, and employee-role categories. The resulting ontology should preserve the intended abstraction levels and multi-level semantics of the domain.
+
+The generated ontology must satisfy the following requirements:
+Correctly distinguish entities at different abstraction levels, including individuals, first-order classes, second-order classes, and higher-order classes where applicable.
+Represent entities as both OWL classes and OWL individuals whenever required by the domain semantics.
+Use mlt:isSubordinateOf where appropriate.
+Use mlt:isPowertypeOf where appropriate.
+Use mlt:isCharacterizationOf where appropriate.
+Use mlt:TokenIndividual where appropriate.
+Preserve valid multi-level instantiation chains across abstraction levels.
+Include all classes, individuals, object properties, and axioms necessary to faithfully represent the domain.
+Produce a syntactically valid OWL 2 ontology serialized in RDF/Turtle.
+Output Requirements
+Return only the RDF/Turtle ontology.
+Do not include explanations, comments, Markdown formatting, or any text outside the ontology.
+
+
+
+
+
+                                             Person Demographic Domain
+
+You are an ontology engineer specializing in OWL 2, Description Logics, Multi-Level Theory (MLT), meta-modeling, and knowledge representation. You have extensive experience in designing semantically correct ontologies that preserve multi-level semantics and conform to OWL 2 standards.
+Your task is to generate a complete OWL 2 ontology in RDF/Turtle syntax that faithfully models the domain described below according to the principles of Multi-Level Theory (MLT).
+The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
+Example Ontology
+@prefix :    <http://example.org/Taxonomy#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+#################################################################
+# Classes
+#################################################################
+
+:TaxonomicRank   rdf:type owl:Class .
+:Genus           rdf:type owl:Class .
+:Species         rdf:type owl:Class .
+:Organism        rdf:type owl:Class .
+:Panthera        rdf:type owl:Class .
+:PantheraSpecies rdf:type owl:Class .
+:PantheraOnca    rdf:type owl:Class .
+:PantheraTigris  rdf:type owl:Class .
+:PantheraLeo     rdf:type owl:Class .
+
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+mlt:TokenIndividual rdf:type owl:Class .
+
+#################################################################
+# Object Properties
+#################################################################
+
+mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
+#################################################################
+# Axioms
+#################################################################
+mlt:3rdOrderClass
+    mlt:isPowertypeOf mlt:2ndOrderClass ;
+    mlt:isCharacterizationOf mlt:2ndOrderClass;
+    mlt:isSubordinationOf    mlt:3rdOrderClass.
+
+mlt:2ndOrderClass
+    mlt:isPowertypeOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf mlt:1stOrderClass .
+     mlt:isSubordinationOf    mlt:2ndOrderClass.
+
+
+:GenusType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Genus .
+
+:SpecieType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Species.
+
+:Genus
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank .
+
+:Species
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank ;
+    mlt:isSubordinateOf :Genus ;
+    mlt:isCharacterizationOf :Organism.
+
+:Organism
+    rdf:type mlt:1stOrderClass .
+    rdfs:subClassOf  mlt:TokenIndividual
+
+:Panthera
+    rdf:type :Genus ;
+    rdfs:subClassOf :Organism .
+
+:PantheraSpecies
+    rdf:type :Species ;
+    rdfs:subClassOf :Organism ;
+    mlt:isCharacterization :Panthera.
+
+:PantheraOnca
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+
+:PantheraTigris
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+
+:PantheraLeo
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera ;
+ 
+#################################################################
+#  Individual
+#################################################################
+
+:Cecil
+    rdf:type owl:NamedIndividual ;
+       rdf:type :PantheraLeo .
+
+
+
+
+
+
+The example illustrates how to:
+distinguish entities at different abstraction levels;
+represent higher-order and first-order concepts;
+model class-instance duality when required;
+preserve valid multi-level classification structures;
+organize ontology elements using Multi-Level Theory principles.
+New Domain
+Generate a complete OWL 2 ontology in RDF/Turtle syntax that correctly models the following domain according to the principles of Multi-Level Theory (MLT).
+Domain Description
+Construct an ontology representing a person classification hierarchy. The ontology should model PersonType, PersonTypeByGender, EmployeeType, and EmployeeRoleTypeByGender as classification types, with Person as the corresponding person type. It should include the categories Woman, Man, Manager, Researcher, FemaleManager, and MaleManager, representing different classifications and roles of persons. The ontology should also include the individual persons Ana and Bob. The resulting ontology should capture the relationships among these concepts while preserving the intended abstraction levels and multi-level semantics of the domain.
+The generated ontology must satisfy the following requirements:
+Correctly distinguish entities at different abstraction levels, including individuals, first-order classes, second-order classes, and higher-order classes where applicable.
+Represent entities as both OWL classes and OWL individuals whenever required by the domain semantics.
+Use mlt:isSubordinateOf where appropriate.
+Use mlt:isPowertypeOf where appropriate.
+Use mlt:isCharacterizationOf where appropriate.
+Use mlt:TokenIndividual where appropriate.
+Preserve valid multi-level instantiation chains across abstraction levels.
+Include all classes, individuals, object properties, and axioms necessary to faithfully represent the domain.
+Produce a syntactically valid OWL 2 ontology serialized in RDF/Turtle.
+Output Requirements
+Return only the RDF/Turtle ontology.
+Do not include explanations, comments, Markdown formatting, or any text outside the ontology.
+
+
+

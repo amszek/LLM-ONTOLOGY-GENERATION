@@ -1,0 +1,98 @@
+
+@prefix :    <http://example.org/Taxonomy#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+#################################################################
+# Classes
+#################################################################
+
+:TaxonomicRank   rdf:type owl:Class .
+:Genus           rdf:type owl:Class .
+:Species         rdf:type owl:Class .
+:Organism        rdf:type owl:Class .
+:Panthera        rdf:type owl:Class .
+:PantheraSpecies rdf:type owl:Class .
+:PantheraOnca    rdf:type owl:Class .
+:PantheraTigris  rdf:type owl:Class .
+:PantheraLeo     rdf:type owl:Class .
+
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+mlt:TokenIndividual rdf:type owl:Class .
+
+#################################################################
+# Object Properties
+#################################################################
+
+mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
+#################################################################
+# Axioms
+#################################################################
+mlt:3rdOrderClass
+    mlt:isPowertypeOf mlt:2ndOrderClass ;
+    mlt:isCharacterizationOf mlt:2ndOrderClass;
+    mlt:isSubordinationOf    mlt:3rdOrderClass.
+
+mlt:2ndOrderClass
+    mlt:isPowertypeOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf mlt:1stOrderClass ;
+     mlt:isSubordinationOf    mlt:2ndOrderClass.
+
+
+:GenusType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Genus .
+
+:SpecieType
+    rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf :Species.
+
+:Genus
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank .
+
+:Species
+    rdf:type mlt:2ndOrderClass ;
+    rdf:type :TaxonomicRank ;
+    mlt:isSubordinateOf :Genus ;
+    mlt:isCharacterizationOf :Organism.
+
+:Organism
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf  mlt:TokenIndividual .
+
+:Panthera
+    rdf:type :Genus ;
+    rdfs:subClassOf :Organism .
+
+:PantheraSpecies
+    rdf:type :Species ;
+    rdfs:subClassOf :Organism ;
+    mlt:isCharacterization :Panthera.
+
+:PantheraOnca
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera .
+
+:PantheraTigris
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera .
+
+:PantheraLeo
+    rdf:type :PantheraSpecies ;
+    rdfs:subClassOf :Panthera .
+ 
+#################################################################
+#  Individual
+#################################################################
+
+:Cecil
+    rdf:type owl:NamedIndividual ;
+       rdf:type :PantheraLeo .
+
