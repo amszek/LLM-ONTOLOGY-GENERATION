@@ -1,0 +1,1 @@
+This repository contains the experimental materials used for this study. The study investigates whether Large Language Models (LLMs) can generate semantically correct, multi-level OWL ontologies and examines how different prompting strategies affect their performance.
