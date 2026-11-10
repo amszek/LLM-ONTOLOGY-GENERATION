@@ -1,0 +1,210 @@
+First Attempt
+
+@prefix : http://example.org/panthera# .
+@prefix mlt: http://example.org/mlt# .
+@prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# .
+@prefix rdfs: http://www.w3.org/2000/01/rdf-schema# .
+@prefix owl: http://www.w3.org/2002/07/owl# .
+:TaxonomicRank
+rdf:type owl:Class .
+:GenusType
+rdf:type owl:Class .
+:SpeciesType
+rdf:type owl:Class .
+:Genus
+rdf:type owl:Class .
+:Species
+rdf:type owl:Class .
+:Organism
+rdf:type owl:Class .
+:Panthera
+rdf:type owl:Class .
+:PantheraLeo
+rdf:type owl:Class .
+:PantheraTigris
+rdf:type owl:Class .
+:PantheraOnca
+rdf:type owl:Class .
+mlt:1stOrderClass
+rdf:type owl:Class .
+mlt:2ndOrderClass
+rdf:type owl:Class .
+mlt:3rdOrderClass
+rdf:type owl:Class .
+mlt:TokenIndividual
+rdf:type owl:Class .
+mlt:isSubordinateOf rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf rdf:type owl:ObjectProperty .
+mlt:3rdOrderClass
+mlt:isPowertypeOf mlt:2ndOrderClass ;
+mlt:isCharacterizationOf mlt:2ndOrderClass ;
+mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass
+mlt:isPowertypeOf mlt:1stOrderClass ;
+mlt:isCharacterizationOf mlt:1stOrderClass ;
+mlt:isSubordinateOf mlt:2ndOrderClass .
+:TaxonomicRank
+rdf:type mlt:3rdOrderClass ;
+mlt:isPowertypeOf :GenusType ;
+mlt:isPowertypeOf :SpeciesType .
+:GenusType
+rdf:type mlt:2ndOrderClass ;
+rdfs:subClassOf :TaxonomicRank ;
+mlt:isPowertypeOf :Genus ;
+mlt:isCharacterizationOf :Organism .
+:SpeciesType
+rdf:type mlt:2ndOrderClass ;
+rdfs:subClassOf :TaxonomicRank ;
+mlt:isPowertypeOf :Species ;
+mlt:isCharacterizationOf :Organism ;
+mlt:isSubordinateOf :GenusType .
+:Organism
+rdf:type mlt:1stOrderClass .
+:Genus
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Organism .
+:Species
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Organism ;
+mlt:isSubordinateOf :Genus .
+:Panthera
+rdf:type :GenusType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Genus .
+:PantheraLeo
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+rdfs:subClassOf :Panthera .
+:PantheraTigris
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+rdfs:subClassOf :Panthera .
+:PantheraOnca
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+rdfs:subClassOf :Panthera .
+:LeoSpecimen
+rdf:type owl:NamedIndividual ;
+rdf:type :PantheraLeo ;
+rdf:type mlt:TokenIndividual .
+:TigrisSpecimen
+rdf:type owl:NamedIndividual ;
+rdf:type :PantheraTigris ;
+rdf:type mlt:TokenIndividual .
+:OncaSpecimen
+rdf:type owl:NamedIndividual ;
+rdf:type :PantheraOnca ;
+rdf:type mlt:TokenIndividual .
+
+Second Attempt
+
+@prefix : http://example.org/taxonomy# .
+@prefix mlt: http://example.org/mlt# .
+@prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# .
+@prefix rdfs: http://www.w3.org/2000/01/rdf-schema# .
+@prefix owl: http://www.w3.org/2002/07/owl# .
+:TaxonomicRank
+rdf:type owl:Class .
+:GenusType
+rdf:type owl:Class .
+:SpeciesType
+rdf:type owl:Class .
+:Genus
+rdf:type owl:Class .
+:Species
+rdf:type owl:Class .
+:Organism
+rdf:type owl:Class .
+:Panthera
+rdf:type owl:Class .
+:PantheraLeo
+rdf:type owl:Class .
+:PantheraTigris
+rdf:type owl:Class .
+:PantheraOnca
+rdf:type owl:Class .
+mlt:1stOrderClass
+rdf:type owl:Class .
+mlt:2ndOrderClass
+rdf:type owl:Class .
+mlt:3rdOrderClass
+rdf:type owl:Class .
+mlt:TokenIndividual
+rdf:type owl:Class .
+mlt:isSubordinateOf
+rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf
+rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf
+rdf:type owl:ObjectProperty .
+mlt:3rdOrderClass
+mlt:isPowertypeOf mlt:2ndOrderClass ;
+mlt:isCharacterizationOf mlt:2ndOrderClass ;
+mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass
+mlt:isPowertypeOf mlt:1stOrderClass ;
+mlt:isCharacterizationOf mlt:1stOrderClass ;
+mlt:isSubordinateOf mlt:2ndOrderClass .
+:TaxonomicRank
+rdf:type mlt:3rdOrderClass ;
+mlt:isPowertypeOf :GenusType , :SpeciesType ;
+mlt:isCharacterizationOf :GenusType , :SpeciesType .
+:GenusType
+rdf:type mlt:2ndOrderClass ;
+rdfs:subClassOf :TaxonomicRank ;
+mlt:isPowertypeOf :Genus ;
+mlt:isCharacterizationOf :Genus ;
+mlt:isSubordinateOf :TaxonomicRank .
+:SpeciesType
+rdf:type mlt:2ndOrderClass ;
+rdfs:subClassOf :TaxonomicRank ;
+mlt:isPowertypeOf :Species ;
+mlt:isCharacterizationOf :Species ;
+mlt:isSubordinateOf :GenusType .
+:Genus
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Organism .
+:Species
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Organism ;
+mlt:isSubordinateOf :Genus .
+:Organism
+rdf:type mlt:1stOrderClass .
+:Panthera
+rdf:type :GenusType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Genus .
+:PantheraLeo
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+mlt:isSubordinateOf :Panthera .
+:PantheraTigris
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+mlt:isSubordinateOf :Panthera .
+:PantheraOnca
+rdf:type :SpeciesType ;
+rdf:type mlt:1stOrderClass ;
+rdfs:subClassOf :Species ;
+mlt:isSubordinateOf :Panthera .
+:leoToken
+rdf:type owl:NamedIndividual ;
+rdf:type mlt:TokenIndividual ;
+rdf:type :PantheraLeo .
+:tigrisToken
+rdf:type owl:NamedIndividual ;
+rdf:type mlt:TokenIndividual ;
+rdf:type :PantheraTigris .
+:oncaToken
+rdf:type owl:NamedIndividual ;
+rdf:type mlt:TokenIndividual ;
+rdf:type :PantheraOnca .
+
+
+

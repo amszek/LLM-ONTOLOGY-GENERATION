@@ -1,0 +1,43 @@
+First Attempt
+
+@prefix : http://example.org/organization# . @prefix owl: http://www.w3.org/2002/07/owl# . @prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# . @prefix rdfs: http://www.w3.org/2000/01/rdf-schema# . @prefix xsd: http://www.w3.org/2001/XMLSchema# . @prefix mlt: http://purl.org/nemo/mlt# .
+http://example.org/organization rdf:type owl:Ontology ; owl:imports http://purl.org/nemo/mlt .
+mlt:TokenIndividual rdf:type owl:Class . mlt:1stOrderClass rdf:type owl:Class . mlt:2ndOrderClass rdf:type owl:Class . mlt:3rdOrderClass rdf:type owl:Class .
+:Person rdf:type owl:Class , mlt:1stOrderClass ; rdfs:subClassOf mlt:TokenIndividual .
+:OrganizationalClassificationType rdf:type owl:Class , mlt:3rdOrderClass .
+:EmployeeType rdf:type owl:Class , mlt:2ndOrderClass .
+:BusinessRole rdf:type owl:Class , mlt:2ndOrderClass ; rdfs:subClassOf :EmployeeType .
+:ManagementRole rdf:type owl:Class , mlt:2ndOrderClass ; rdfs:subClassOf :EmployeeType .
+:BusinessRole mlt:isSubordinateOf :ManagementRole .
+:BusinessRoleRank rdf:type owl:Class , :OrganizationalClassificationType , mlt:2ndOrderClass ; mlt:isCharacterizationOf :BusinessRole .
+:ManagementRoleRank rdf:type owl:Class , :OrganizationalClassificationType , mlt:2ndOrderClass ; mlt:isCharacterizationOf :ManagementRole .
+:Employee rdf:type owl:Class , :EmployeeType , mlt:1stOrderClass ; mlt:isPowertypeOf :EmployeeCollection ; rdfs:subClassOf :Person .
+:EmployeeCollection rdf:type owl:Class , :EmployeeType , mlt:1stOrderClass .
+:Programmer rdf:type owl:Class , :BusinessRole , mlt:1stOrderClass ; rdfs:subClassOf :Employee .
+:SoftwareDesigner rdf:type owl:Class , :BusinessRole , mlt:1stOrderClass ; rdfs:subClassOf :Employee .
+:DatabaseDesigner rdf:type owl:Class , :BusinessRole , mlt:1stOrderClass ; rdfs:subClassOf :Employee .
+:Manager rdf:type owl:Class , :ManagementRole , mlt:1stOrderClass ; rdfs:subClassOf :Employee .
+:Director rdf:type owl:Class , :ManagementRole , mlt:1stOrderClass ; rdfs:subClassOf :Employee .
+:JohnDoe rdf:type owl:NamedIndividual , :Programmer , mlt:TokenIndividual .
+:JaneSmith rdf:type owl:NamedIndividual , :Manager , mlt:TokenIndividual .
+
+
+
+
+
+Second Attempt
+@prefix : http://example.org/organization# . @prefix mlt: http://purl.org/nemo/mlt# . @prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# . @prefix rdfs: http://www.w3.org/2000/01/rdf-schema# . @prefix owl: http://www.w3.org/2002/07/owl# . @prefix xsd: http://www.w3.org/2001/XMLSchema# .
+http://example.org/organization a owl:Ontology ; owl:imports http://purl.org/nemo/mlt .
+mlt:TokenIndividual a owl:Class . mlt:isPowertypeOf a owl:ObjectProperty . mlt:isCharacterizationOf a owl:ObjectProperty . mlt:isSubordinateOf a owl:ObjectProperty .
+:EmployeeType a owl:Class ; a owl:NamedIndividual ; mlt:isPowertypeOf :Employee ; mlt:isCharacterizationOf :Employee .
+:BusinessRole a owl:Class ; a owl:NamedIndividual ; mlt:isPowertypeOf :Programmer ; mlt:isCharacterizationOf :Employee ; mlt:isSubordinateOf :EmployeeType .
+:ManagementRole a owl:Class ; a owl:NamedIndividual ; mlt:isPowertypeOf :Manager ; mlt:isCharacterizationOf :Employee ; mlt:isSubordinateOf :BusinessRole .
+:Employee a owl:Class ; a owl:NamedIndividual .
+:Programmer a owl:Class ; a owl:NamedIndividual ; rdfs:subClassOf :Employee ; rdf:type :BusinessRole .
+:SoftwareDesigner a owl:Class ; a owl:NamedIndividual ; rdfs:subClassOf :Employee ; rdf:type :BusinessRole .
+:DatabaseDesigner a owl:Class ; a owl:NamedIndividual ; rdfs:subClassOf :Employee ; rdf:type :BusinessRole .
+:Manager a owl:Class ; a owl:NamedIndividual ; rdfs:subClassOf :Employee ; rdf:type :ManagementRole .
+:Director a owl:Class ; a owl:NamedIndividual ; rdfs:subClassOf :Manager ; rdf:type :ManagementRole .
+:JohnDoe a owl:NamedIndividual, mlt:TokenIndividual, :Programmer .
+:JaneSmith a owl:NamedIndividual, mlt:TokenIndividual, :Director .
+

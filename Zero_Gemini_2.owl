@@ -1,0 +1,106 @@
+First Attempt
+
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix mlt: <http://www.example.org/mlt#> .
+@prefix org: <http://www.example.org/organization#> .
+
+<http://www.example.org/organization> a owl:Ontology .
+
+mlt:Entity a owl:Class .
+
+mlt:TokenIndividual a owl:Class ;
+    rdfs:subClassOf mlt:Entity .
+
+mlt:Type a owl:Class ;
+    rdfs:subClassOf mlt:Entity .
+
+mlt:FirstOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:SecondOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:ThirdOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:isSubordinateOf a owl:ObjectProperty .
+
+mlt:isPowertypeOf a owl:ObjectProperty .
+
+mlt:isCharacterizationOf a owl:ObjectProperty .
+
+org:OrganizationalClassificationType a owl:Class, mlt:ThirdOrderType ;
+    rdfs:subClassOf mlt:Type .
+
+org:EmployeeType a owl:Class, owl:NamedIndividual, mlt:SecondOrderType ;
+    rdf:type org:OrganizationalClassificationType ;
+    mlt:isPowertypeOf org:Employee ;
+    mlt:isCharacterizationOf org:Employee .
+
+org:BusinessRole a owl:Class, owl:NamedIndividual, mlt:SecondOrderType ;
+    rdf:type org:OrganizationalClassificationType ;
+    mlt:isSubordinateOf org:EmployeeType ;
+    mlt:isPowertypeOf org:Employee ;
+    mlt:isCharacterizationOf org:Employee .
+
+org:ManagementRole a owl:Class, owl:NamedIndividual, mlt:SecondOrderType ;
+    rdf:type org:OrganizationalClassificationType ;
+    mlt:isSubordinateOf org:EmployeeType ;
+    mlt:isPowertypeOf org:Employee ;
+    mlt:isCharacterizationOf org:Employee .
+
+org:Employee a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdfs:subClassOf mlt:TokenIndividual .
+
+org:Programmer a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type org:BusinessRole, org:EmployeeType ;
+    rdfs:subClassOf org:Employee .
+
+org:SoftwareDesigner a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type org:BusinessRole, org:EmployeeType ;
+    rdfs:subClassOf org:Employee .
+
+org:DatabaseDesigner a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type org:BusinessRole, org:EmployeeType ;
+    rdfs:subClassOf org:Employee .
+
+org:Manager a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type org:ManagementRole, org:EmployeeType ;
+    rdfs:subClassOf org:Employee .
+
+org:Director a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type org:ManagementRole, org:EmployeeType ;
+    rdfs:subClassOf org:Manager .
+
+org:alice a owl:NamedIndividual, mlt:TokenIndividual, org:Programmer, org:Manager .
+
+org:bob a owl:NamedIndividual, mlt:TokenIndividual, org:SoftwareDesigner .
+
+org:charlie a owl:NamedIndividual, mlt:TokenIndividual, org:DatabaseDesigner .
+
+org:diana a owl:NamedIndividual, mlt:TokenIndividual, org:Director .
+
+
+Second Attempt
+@prefix : http://example.org/org-ontology# . @prefix mlt: http://example.org/mlt# . @prefix owl: http://www.w3.org/2002/07/owl# . @prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# . @prefix rdfs: http://www.w3.org/2000/01/rdf-schema# . @prefix xsd: http://www.w3.org/2001/XMLSchema# .
+http://example.org/org-ontology a owl:Ontology .
+mlt:FirstOrderClass a owl:Class . mlt:SecondOrderClass a owl:Class . mlt:TokenIndividual a owl:Class .
+mlt:isPowertypeOf a owl:ObjectProperty . mlt:isSubordinateOf a owl:ObjectProperty . mlt:isCharacterizationOf a owl:ObjectProperty .
+:EmployeeType a owl:Class , owl:NamedIndividual , mlt:SecondOrderClass ; mlt:isPowertypeOf :Employee .
+:BusinessRole a owl:Class , owl:NamedIndividual , mlt:SecondOrderClass ; rdfs:subClassOf :EmployeeType ; mlt:isSubordinateOf :EmployeeType ; mlt:isCharacterizationOf :Employee .
+:ManagementRole a owl:Class , owl:NamedIndividual , mlt:SecondOrderClass ; rdfs:subClassOf :EmployeeType ; mlt:isSubordinateOf :EmployeeType ; mlt:isCharacterizationOf :Employee .
+:Employee a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass .
+:Programmer a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass , :BusinessRole , :EmployeeType ; rdfs:subClassOf :Employee .
+:SoftwareDesigner a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass , :BusinessRole , :EmployeeType ; rdfs:subClassOf :Employee .
+:DatabaseDesigner a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass , :BusinessRole , :EmployeeType ; rdfs:subClassOf :Employee .
+:Manager a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass , :ManagementRole , :EmployeeType ; rdfs:subClassOf :Employee .
+:Director a owl:Class , owl:NamedIndividual , mlt:FirstOrderClass , :ManagementRole , :EmployeeType ; rdfs:subClassOf :Employee .
+:JohnDoe a owl:NamedIndividual , mlt:TokenIndividual , :Programmer .
+:JaneSmith a owl:NamedIndividual , mlt:TokenIndividual , :SoftwareDesigner .
+:BobDavis a owl:NamedIndividual , mlt:TokenIndividual , :DatabaseDesigner .
+:AliceManager a owl:NamedIndividual , mlt:TokenIndividual , :Manager .
+:CharlieDirector a owl:NamedIndividual , mlt:TokenIndividual , :Director .
+

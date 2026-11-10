@@ -1,0 +1,96 @@
+First Attempt
+
+
+
+
+
+
+Second Attempt
+@prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# .
+@prefix rdfs: http://www.w3.org/2000/01/rdf-schema# .
+@prefix owl: http://www.w3.org/2002/07/owl# .
+@prefix xsd: http://www.w3.org/2001/XMLSchema# .
+@prefix mlt: http://example.org/mlt# .
+@prefix org: http://example.org/org# .
+org: a owl:Ontology .
+mlt:isSubordinateOf a owl:ObjectProperty , owl:TransitiveProperty ;
+rdfs:domain owl:Class ;
+rdfs:range owl:Class .
+mlt:isPowertypeOf a owl:ObjectProperty , owl:TransitiveProperty ;
+rdfs:domain owl:Class ;
+rdfs:range owl:Class .
+mlt:isCharacterizationOf a owl:ObjectProperty ;
+rdfs:domain owl:Class ;
+rdfs:range owl:Class .
+mlt:TokenIndividual a owl:Class .
+org:BusinessRole a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+rdfs:label "Business Role" .
+org:ManagementRole a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+rdfs:label "Management Role" .
+org:EmployeeType a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+rdfs:label "Employee Type" .
+org:OrganizationalType a owl:Class ;
+rdfs:label "Organizational Type" .
+org:Employee a owl:Class , org:OrganizationalType ;
+rdfs:label "Employee" .
+org:Programmer a owl:Class , org:OrganizationalType ;
+rdfs:subClassOf org:Employee ;
+rdfs:label "Programmer" .
+org:SoftwareDesigner a owl:Class , org:OrganizationalType ;
+rdfs:subClassOf org:Employee ;
+rdfs:label "Software Designer" .
+org:DatabaseDesigner a owl:Class , org:OrganizationalType ;
+rdfs:subClassOf org:Employee ;
+rdfs:label "Database Designer" .
+org:Manager a owl:Class , org:OrganizationalType ;
+rdfs:subClassOf org:Employee ;
+rdfs:label "Manager" .
+org:Director a owl:Class , org:OrganizationalType ;
+rdfs:subClassOf org:Manager ;
+rdfs:label "Director" .
+org:BusinessRoleType a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+owl:equivalentClass org:BusinessRole .
+org:ManagementRoleType a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+owl:equivalentClass org:ManagementRole .
+org:EmployeeRoleType a owl:Class ;
+rdfs:subClassOf mlt:TokenIndividual ;
+owl:equivalentClass org:EmployeeType .
+org:BusinessRole mlt:isPowertypeOf org:OrganizationalType .
+org:ManagementRole mlt:isPowertypeOf org:Manager .
+org:EmployeeType mlt:isPowertypeOf org:Employee .
+org:BusinessRole mlt:isCharacterizationOf org:EmployeeType .
+org:ManagementRole mlt:isCharacterizationOf org:EmployeeType .
+org:EmployeeType mlt:isCharacterizationOf org:Employee .
+org:Programmer mlt:isSubordinateOf org:Employee .
+org:SoftwareDesigner mlt:isSubordinateOf org:Employee .
+org:DatabaseDesigner mlt:isSubordinateOf org:Employee .
+org:Manager mlt:isSubordinateOf org:Employee .
+org:Director mlt:isSubordinateOf org:Manager .
+org:johnDoe a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:Programmer ;
+rdfs:label "John Doe" .
+org:janeSmith a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:Manager ;
+rdfs:label "Jane Smith" .
+org:acmeCorp a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:Employee ;
+rdfs:label "Acme Corp Employee Instance" .
+org:businessRoleInstance a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:BusinessRole ;
+rdfs:label "Business Role Instance" .
+org:managementRoleInstance a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:ManagementRole ;
+rdfs:label "Management Role Instance" .
+org:employeeTypeInstance a owl:NamedIndividual , mlt:TokenIndividual ;
+rdf:type org:EmployeeType ;
+rdfs:label "Employee Type Instance" .
+org:Programmer mlt:isPowertypeOf org:johnDoe .
+org:Manager mlt:isPowertypeOf org:janeSmith .
+org:Employee mlt:isPowertypeOf org:acmeCorp .
+
+

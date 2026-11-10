@@ -1,0 +1,153 @@
+First Attempt
+
+@prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# .
+@prefix rdfs: http://www.w3.org/2000/01/rdf-schema# .
+@prefix owl: http://www.w3.org/2002/07/owl# .
+@prefix xsd: http://www.w3.org/2001/XMLSchema# .
+@prefix mlt: http://example.org/mlt# .
+@prefix ex: http://example.org/domain# .
+http://example.org/domain a owl:Ontology .
+mlt:isSubordinateOf a owl:ObjectProperty .
+mlt:isPowertypeOf a owl:ObjectProperty .
+mlt:isCharacterizationOf a owl:ObjectProperty .
+mlt:TokenIndividual a owl:Class .
+ex:Person a owl:Class .
+ex:Person a owl:NamedIndividual .
+ex:PersonType a owl:Class ;
+a owl:NamedIndividual ;
+mlt:isPowertypeOf ex:Person .
+ex:PersonTypeByGender a owl:Class ;
+a owl:NamedIndividual ;
+rdfs:subClassOf ex:PersonType ;
+mlt:isSubordinateOf ex:PersonType ;
+mlt:isPowertypeOf ex:Woman, ex:Man .
+ex:EmployeeType a owl:Class ;
+a owl:NamedIndividual ;
+rdfs:subClassOf ex:PersonType ;
+mlt:isSubordinateOf ex:PersonType ;
+mlt:isPowertypeOf ex:Manager, ex:Researcher .
+ex:EmployeeRoleTypeByGender a owl:Class ;
+a owl:NamedIndividual ;
+rdfs:subClassOf ex:EmployeeType ;
+mlt:isSubordinateOf ex:EmployeeType ;
+mlt:isPowertypeOf ex:FemaleManager, ex:MaleManager .
+ex:Woman a owl:Class ;
+rdfs:subClassOf ex:Person ;
+mlt:isCharacterizationOf ex:PersonTypeByGender .
+ex:Man a owl:Class ;
+rdfs:subClassOf ex:Person ;
+mlt:isCharacterizationOf ex:PersonTypeByGender .
+ex:Manager a owl:Class ;
+rdfs:subClassOf ex:Person ;
+mlt:isCharacterizationOf ex:EmployeeType .
+ex:Researcher a owl:Class ;
+rdfs:subClassOf ex:Person ;
+mlt:isCharacterizationOf ex:EmployeeType .
+ex:FemaleManager a owl:Class ;
+rdfs:subClassOf ex:Manager, ex:Woman ;
+mlt:isCharacterizationOf ex:EmployeeRoleTypeByGender .
+ex:MaleManager a owl:Class ;
+rdfs:subClassOf ex:Manager, ex:Man ;
+mlt:isCharacterizationOf ex:EmployeeRoleTypeByGender .
+ex:Ana a owl:NamedIndividual ;
+a ex:Woman, ex:Manager, ex:FemaleManager ;
+a mlt:TokenIndividual .
+ex:Bob a owl:NamedIndividual ;
+a ex:Man, ex:Researcher ;
+a mlt:TokenIndividual .
+
+
+
+
+
+
+Second Attempt
+@prefix : http://example.org/person# .
+@prefix mlt: http://example.org/mlt# .
+@prefix owl: http://www.w3.org/2002/07/owl# .
+@prefix rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns# .
+@prefix rdfs: http://www.w3.org/2000/01/rdf-schema# .
+@prefix xsd: http://www.w3.org/2001/XMLSchema# .
+http://example.org/person a owl:Ontology .
+mlt:isSubordinateOf a owl:ObjectProperty ;
+rdfs:label "is subordinate of" ;
+rdfs:comment "Relates a subordinate entity to its superordinate entity across abstraction levels." .
+mlt:isPowertypeOf a owl:ObjectProperty ;
+rdfs:label "is powertype of" ;
+rdfs:comment "Relates a powertype to the class whose instances it classifies." .
+mlt:isCharacterizationOf a owl:ObjectProperty ;
+rdfs:label "is characterization of" ;
+rdfs:comment "Relates a characterization class to the class it characterizes." .
+mlt:TokenIndividual a owl:Class ;
+rdfs:label "Token Individual" ;
+rdfs:comment "The class of all token individuals (first-order instances)." .
+:Person a owl:Class ;
+rdfs:label "Person" ;
+rdfs:comment "The first-order class of individual persons." ;
+rdfs:subClassOf mlt:TokenIndividual .
+:PersonType a owl:Class ;
+rdfs:label "Person Type" ;
+rdfs:comment "Second-order class whose instances are classification types for persons." ;
+owl:disjointWith :Person .
+:PersonTypeByGender a owl:Class ;
+rdfs:label "Person Type by Gender" ;
+rdfs:comment "Second-order class of gender-based person classification types." ;
+rdfs:subClassOf :PersonType .
+:EmployeeType a owl:Class ;
+rdfs:label "Employee Type" ;
+rdfs:comment "Second-order class of employee classification types." ;
+rdfs:subClassOf :PersonType .
+:EmployeeRoleTypeByGender a owl:Class ;
+rdfs:label "Employee Role Type by Gender" ;
+rdfs:comment "Second-order class of gender-based employee role classification types." ;
+rdfs:subClassOf :EmployeeType .
+:Woman a owl:Class , :PersonTypeByGender ;
+rdfs:label "Woman" ;
+rdfs:comment "A person type classifying female persons; also an instance of PersonTypeByGender." ;
+rdfs:subClassOf :Person ;
+mlt:isPowertypeOf :Person .
+:Man a owl:Class , :PersonTypeByGender ;
+rdfs:label "Man" ;
+rdfs:comment "A person type classifying male persons; also an instance of PersonTypeByGender." ;
+rdfs:subClassOf :Person ;
+mlt:isPowertypeOf :Person .
+:Manager a owl:Class , :EmployeeType ;
+rdfs:label "Manager" ;
+rdfs:comment "An employee type classifying managerial employees; also an instance of EmployeeType." ;
+rdfs:subClassOf :Person ;
+mlt:isPowertypeOf :Person .
+:Researcher a owl:Class , :EmployeeType ;
+rdfs:label "Researcher" ;
+rdfs:comment "An employee type classifying research employees; also an instance of EmployeeType." ;
+rdfs:subClassOf :Person ;
+mlt:isPowertypeOf :Person .
+:FemaleManager a owl:Class , :EmployeeRoleTypeByGender ;
+rdfs:label "Female Manager" ;
+rdfs:comment "A gender-based employee role type for female managers; also an instance of EmployeeRoleTypeByGender." ;
+rdfs:subClassOf :Manager , :Woman ;
+mlt:isPowertypeOf :Manager ;
+mlt:isSubordinateOf :Manager , :Woman .
+:MaleManager a owl:Class , :EmployeeRoleTypeByGender ;
+rdfs:label "Male Manager" ;
+rdfs:comment "A gender-based employee role type for male managers; also an instance of EmployeeRoleTypeByGender." ;
+rdfs:subClassOf :Manager , :Man ;
+mlt:isPowertypeOf :Manager ;
+mlt:isSubordinateOf :Manager , :Man .
+:PersonType mlt:isCharacterizationOf :Person .
+:PersonTypeByGender mlt:isCharacterizationOf :Person .
+:EmployeeType mlt:isCharacterizationOf :Person .
+:EmployeeRoleTypeByGender mlt:isCharacterizationOf :Manager .
+:Woman mlt:isSubordinateOf :PersonTypeByGender .
+:Man mlt:isSubordinateOf :PersonTypeByGender .
+:Manager mlt:isSubordinateOf :EmployeeType .
+:Researcher mlt:isSubordinateOf :EmployeeType .
+:FemaleManager mlt:isSubordinateOf :EmployeeRoleTypeByGender .
+:MaleManager mlt:isSubordinateOf :EmployeeRoleTypeByGender .
+:ana a owl:NamedIndividual , :Woman , :FemaleManager , :Manager ;
+rdfs:label "Ana" ;
+a mlt:TokenIndividual .
+:bob a owl:NamedIndividual , :Man , :MaleManager , :Manager ;
+rdfs:label "Bob" ;
+a mlt:TokenIndividual .
+
+

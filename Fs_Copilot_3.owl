@@ -1,0 +1,188 @@
+First Attempt
+
+@prefix : <http://example.org/PersonClassification#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+:PersonClassificationOntology rdf:type owl:Ontology .
+#################################################################
+# Classes
+#################################################################
+:ClassificationType rdf:type owl:Class .
+:PersonType rdf:type owl:Class .
+:PersonTypeByGender rdf:type owl:Class .
+:EmployeeType rdf:type owl:Class .
+:EmployeeRoleTypeByGender rdf:type owl:Class .
+:Person rdf:type owl:Class .
+:Woman rdf:type owl:Class .
+:Man rdf:type owl:Class .
+:Manager rdf:type owl:Class .
+:Researcher rdf:type owl:Class .
+:FemaleManager rdf:type owl:Class .
+:MaleManager rdf:type owl:Class .
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+mlt:TokenIndividual rdf:type owl:Class .
+#################################################################
+# Object Properties
+#################################################################
+mlt:isSubordinateOf rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf rdf:type owl:ObjectProperty .
+#################################################################
+# MLT Meta-Level Axioms
+#################################################################
+mlt:3rdOrderClass
+	mlt:isPowertypeOf mlt:2ndOrderClass ;
+	mlt:isCharacterizationOf mlt:2ndOrderClass ;
+	mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass
+	mlt:isPowertypeOf mlt:1stOrderClass ;
+	mlt:isCharacterizationOf mlt:1stOrderClass ;
+	mlt:isSubordinateOf mlt:2ndOrderClass .
+#################################################################
+# Higher-Order Classification Types
+#################################################################
+:PersonType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :Person .
+:PersonTypeByGender
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :Woman ;
+	mlt:isPowertypeOf :Man .
+:EmployeeType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :Manager ;
+	mlt:isPowertypeOf :Researcher .
+:EmployeeRoleTypeByGender
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :FemaleManager ;
+	mlt:isPowertypeOf :MaleManager .
+#################################################################
+# Second-Order Classification Categories
+#################################################################
+:Person
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :ClassificationType .
+:Woman
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :PersonType ;
+	mlt:isSubordinateOf :Person ;
+	mlt:isCharacterizationOf :Person .
+:Man
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :PersonType ;
+	mlt:isSubordinateOf :Person ;
+	mlt:isCharacterizationOf :Person .
+:Manager
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :EmployeeType ;
+	mlt:isSubordinateOf :Person ;
+	mlt:isCharacterizationOf :Person .
+:Researcher
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :EmployeeType ;
+	mlt:isSubordinateOf :Person ;
+	mlt:isCharacterizationOf :Person .
+:FemaleManager
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :EmployeeRoleTypeByGender ;
+	mlt:isSubordinateOf :Manager ;
+	mlt:isCharacterizationOf :Woman .
+:MaleManager
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :EmployeeRoleTypeByGender ;
+	mlt:isSubordinateOf :Manager ;
+	mlt:isCharacterizationOf :Man .
+#################################################################
+# First-Order Classes
+#################################################################
+:PersonEntity
+	rdf:type mlt:1stOrderClass ;
+	rdfs:subClassOf mlt:TokenIndividual .
+:WomanPerson
+	rdf:type :Woman ;
+	rdfs:subClassOf :PersonEntity .
+:ManPerson
+	rdf:type :Man ;
+	rdfs:subClassOf :PersonEntity .
+:ManagerPerson
+	rdf:type :Manager ;
+	rdfs:subClassOf :PersonEntity .
+:ResearcherPerson
+	rdf:type :Researcher ;
+	rdfs:subClassOf :PersonEntity .
+:FemaleManagerPerson
+	rdf:type :FemaleManager ;
+	rdfs:subClassOf :ManagerPerson ;
+	rdfs:subClassOf :WomanPerson .
+:MaleManagerPerson
+	rdf:type :MaleManager ;
+	rdfs:subClassOf :ManagerPerson ;
+	rdfs:subClassOf :ManPerson .
+#################################################################
+# Individuals
+#################################################################
+:Ana
+	rdf:type owl:NamedIndividual ;
+	rdf:type :FemaleManagerPerson .
+:Bob
+	rdf:type owl:NamedIndividual ;
+	rdf:type :MaleManagerPerson .
+
+
+
+
+
+
+Second Attempt
+
+@prefix : <http://example.org/PersonClassification#> . @prefix mlt: <http://example.org/mlt#> . @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> . @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> . @prefix owl: <http://www.w3.org/2002/07/owl#> .
+:PersonClassificationOntology rdf:type owl:Ontology .
+#################################################################
+Classes
+#################################################################
+:ClassificationType rdf:type owl:Class .
+:PersonType rdf:type owl:Class . :PersonTypeByGender rdf:type owl:Class . :EmployeeType rdf:type owl:Class . :EmployeeRoleTypeByGender rdf:type owl:Class .
+:Person rdf:type owl:Class .
+:Woman rdf:type owl:Class . :Man rdf:type owl:Class .
+:Manager rdf:type owl:Class . :Researcher rdf:type owl:Class .
+:FemaleManager rdf:type owl:Class . :MaleManager rdf:type owl:Class .
+mlt:1stOrderClass rdf:type owl:Class . mlt:2ndOrderClass rdf:type owl:Class . mlt:3rdOrderClass rdf:type owl:Class . mlt:TokenIndividual rdf:type owl:Class .
+#################################################################
+Object Properties
+#################################################################
+mlt:isSubordinateOf rdf:type owl:ObjectProperty . mlt:isPowertypeOf rdf:type owl:ObjectProperty . mlt:isCharacterizationOf rdf:type owl:ObjectProperty .
+#################################################################
+MLT Meta-Level Axioms
+#################################################################
+mlt:3rdOrderClass mlt:isPowertypeOf mlt:2ndOrderClass ; mlt:isCharacterizationOf mlt:2ndOrderClass ; mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass mlt:isPowertypeOf mlt:1stOrderClass ; mlt:isCharacterizationOf mlt:1stOrderClass ; mlt:isSubordinateOf mlt:2ndOrderClass .
+#################################################################
+Classification Types
+#################################################################
+:PersonType rdf:type mlt:3rdOrderClass ; mlt:isPowertypeOf :Person .
+:PersonTypeByGender rdf:type mlt:3rdOrderClass ; mlt:isPowertypeOf :Woman ; mlt:isSubordinateOf :PersonType .
+:EmployeeType rdf:type mlt:3rdOrderClass ; mlt:isPowertypeOf :Manager ; mlt:isPowertypeOf :Researcher ; mlt:isSubordinateOf :PersonType .
+:EmployeeRoleTypeByGender rdf:type mlt:3rdOrderClass ; mlt:isPowertypeOf :FemaleManager ; mlt:isPowertypeOf :MaleManager ; mlt:isSubordinateOf :EmployeeType .
+#################################################################
+Second-Order Classes
+#################################################################
+:Woman rdf:type mlt:2ndOrderClass ; rdf:type :PersonTypeByGender ; mlt:isCharacterizationOf :Person .
+:Man rdf:type mlt:2ndOrderClass ; rdf:type :PersonTypeByGender ; mlt:isCharacterizationOf :Person .
+:Manager rdf:type mlt:2ndOrderClass ; rdf:type :EmployeeType ; mlt:isCharacterizationOf :Person .
+:Researcher rdf:type mlt:2ndOrderClass ; rdf:type :EmployeeType ; mlt:isCharacterizationOf :Person .
+#################################################################
+First-Order Classes
+#################################################################
+:Person rdf:type mlt:1stOrderClass ; rdfs:subClassOf mlt:TokenIndividual .
+:FemaleManager rdf:type :Manager ; rdf:type :Woman ; rdfs:subClassOf :Person ; mlt:isCharacterizationOf :Manager .
+:MaleManager rdf:type :Manager ; rdf:type :Man ; rdfs:subClassOf :Person ; mlt:isCharacterizationOf :Manager .
+#################################################################
+Individuals
+#################################################################
+:Ana rdf:type owl:NamedIndividual ; rdf:type :FemaleManager .
+:Bob rdf:type owl:NamedIndividual ; rdf:type :MaleManager .
+

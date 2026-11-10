@@ -1,0 +1,145 @@
+                                First Test
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix mlt: <http://www.example.org/mlt#> .
+@prefix ex: <http://www.example.org/panthera#> .
+
+<http://www.example.org/panthera> a owl:Ontology .
+
+# MLT Core Constructs
+mlt:TokenIndividual a owl:Class .
+
+mlt:isSubordinateOf a owl:ObjectProperty .
+mlt:isPowertypeOf a owl:ObjectProperty .
+mlt:isCharacterizationOf a owl:ObjectProperty .
+
+# Higher-Order Classes (Taxonomic Ranks)
+ex:TaxonomicRank a owl:Class .
+
+ex:GenusType a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:TaxonomicRank ;
+    mlt:isPowertypeOf ex:Organism .
+
+ex:SpeciesType a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:TaxonomicRank ;
+    mlt:isPowertypeOf ex:Organism .
+
+ex:Genus a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:GenusType, ex:TaxonomicRank ;
+    mlt:isPowertypeOf ex:Organism .
+
+ex:Species a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:SpeciesType, ex:TaxonomicRank ;
+    mlt:isPowertypeOf ex:Organism ;
+    mlt:isCharacterizationOf ex:Organism .
+
+# Base Domain Class (Level 0 Abstraction Base)
+ex:Organism a owl:Class ;
+    rdfs:subClassOf mlt:TokenIndividual .
+
+# Taxa (Dual Classification: Class & Individual)
+ex:Panthera a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:Genus ;
+    rdfs:subClassOf ex:Organism ;
+    mlt:isSubordinateOf ex:Organism .
+
+ex:PantheraLeo a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:Species ;
+    rdfs:subClassOf ex:Panthera ;
+    mlt:isSubordinateOf ex:Panthera .
+
+ex:PantheraTigris a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:Species ;
+    rdfs:subClassOf ex:Panthera ;
+    mlt:isSubordinateOf ex:Panthera .
+
+ex:PantheraOnca a owl:Class, owl:NamedIndividual ;
+    rdf:type ex:Species ;
+    rdfs:subClassOf ex:Panthera ;
+    mlt:isSubordinateOf ex:Panthera .
+
+# Token Individual (Concrete Organism)
+ex:Simba a owl:NamedIndividual, mlt:TokenIndividual, ex:PantheraLeo .
+
+
+Second Test
+
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix mlt: <http://www.example.org/mlt#> .
+@prefix bio: <http://www.example.org/biology#> .
+
+<http://www.example.org/biology> a owl:Ontology .
+
+mlt:Entity a owl:Class .
+
+mlt:TokenIndividual a owl:Class ;
+    rdfs:subClassOf mlt:Entity .
+
+mlt:Type a owl:Class ;
+    rdfs:subClassOf mlt:Entity .
+
+mlt:FirstOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:SecondOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:ThirdOrderType a owl:Class ;
+    rdfs:subClassOf mlt:Type .
+
+mlt:isSubordinateOf a owl:ObjectProperty .
+
+mlt:isPowertypeOf a owl:ObjectProperty .
+
+mlt:isCharacterizationOf a owl:ObjectProperty .
+
+bio:TaxonomicRank a owl:Class, mlt:ThirdOrderType ;
+    rdfs:subClassOf mlt:Type .
+
+bio:GenusType a owl:Class, owl:NamedIndividual, mlt:ThirdOrderType ;
+    mlt:isCharacterizationOf bio:Genus .
+
+bio:SpeciesType a owl:Class, owl:NamedIndividual, mlt:ThirdOrderType ;
+    mlt:isCharacterizationOf bio:Species .
+
+bio:Genus a owl:Class, owl:NamedIndividual, mlt:SecondOrderType ;
+    rdf:type bio:TaxonomicRank ;
+    mlt:isPowertypeOf bio:Organism .
+
+bio:Species a owl:Class, owl:NamedIndividual, mlt:SecondOrderType ;
+    rdf:type bio:TaxonomicRank ;
+    mlt:isSubordinateOf bio:Genus ;
+    mlt:isPowertypeOf bio:Organism .
+
+bio:Organism a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdfs:subClassOf mlt:TokenIndividual .
+
+bio:Panthera a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type bio:Genus ;
+    rdfs:subClassOf bio:Organism .
+
+bio:PantheraLeo a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type bio:Species ;
+    rdfs:subClassOf bio:Panthera .
+
+bio:PantheraTigris a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type bio:Species ;
+    rdfs:subClassOf bio:Panthera .
+
+bio:PantheraOnca a owl:Class, owl:NamedIndividual, mlt:FirstOrderType ;
+    rdf:type bio:Species ;
+    rdfs:subClassOf bio:Panthera .
+
+bio:simba a owl:NamedIndividual, mlt:TokenIndividual, bio:PantheraLeo .
+
+bio:rajah a owl:NamedIndividual, mlt:TokenIndividual, bio:PantheraTigris .
+
+bio:shadow a owl:NamedIndividual, mlt:TokenIndividual, bio:PantheraOnca .
+
+
+

@@ -1,0 +1,267 @@
+First Attempt
+@prefix : <http://example.org/Organization#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+:OrganizationOntology rdf:type owl:Ontology .
+#################################################################
+# MLT Core Classes
+#################################################################
+mlt:TokenIndividual rdf:type owl:Class .
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+#################################################################
+# Domain Classes
+#################################################################
+:OrganizationalClassification rdf:type owl:Class .
+:BusinessRole rdf:type owl:Class .
+:ManagementRole rdf:type owl:Class .
+:EmployeeType rdf:type owl:Class .
+:Employee rdf:type owl:Class .
+:TechnicalEmployee rdf:type owl:Class .
+:ManagementEmployee rdf:type owl:Class .
+:Programmer rdf:type owl:Class .
+:SoftwareDesigner rdf:type owl:Class .
+:DatabaseDesigner rdf:type owl:Class .
+:Manager rdf:type owl:Class .
+:Director rdf:type owl:Class .
+#################################################################
+# Object Properties
+#################################################################
+mlt:isSubordinateOf rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf rdf:type owl:ObjectProperty .
+#################################################################
+# Higher-Order MLT Axioms
+#################################################################
+mlt:3rdOrderClass
+	mlt:isPowertypeOf mlt:2ndOrderClass ;
+	mlt:isCharacterizationOf mlt:2ndOrderClass ;
+	mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass
+	mlt:isPowertypeOf mlt:1stOrderClass ;
+	mlt:isCharacterizationOf mlt:1stOrderClass ;
+	mlt:isSubordinateOf mlt:2ndOrderClass .
+#################################################################
+# Third-Order Classification Types
+#################################################################
+:BusinessRoleType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :BusinessRole .
+:ManagementRoleType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :ManagementRole .
+:EmployeeTypeType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :EmployeeType .
+#################################################################
+# Second-Order Organizational Classification Types
+#################################################################
+:BusinessRole
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification .
+:ManagementRole
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification ;
+	mlt:isSubordinateOf :BusinessRole .
+:EmployeeType
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification ;
+	mlt:isCharacterizationOf :Employee .
+#################################################################
+# First-Order Organizational Types
+#################################################################
+:Employee
+	rdf:type mlt:1stOrderClass ;
+	rdfs:subClassOf mlt:TokenIndividual .
+:TechnicalEmployee
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee .
+:ManagementEmployee
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee .
+:Programmer
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :TechnicalEmployee .
+:SoftwareDesigner
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :TechnicalEmployee .
+:DatabaseDesigner
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :TechnicalEmployee .
+:Manager
+	rdf:type :ManagementRole ;
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :ManagementEmployee .
+:Director
+	rdf:type :ManagementRole ;
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Manager ;
+	mlt:isCharacterizationOf :ManagementEmployee .
+#################################################################
+# Example Token Individuals
+#################################################################
+:Alice
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Programmer .
+:Bob
+	rdf:type owl:NamedIndividual ;
+	rdf:type :SoftwareDesigner .
+:Carol
+	rdf:type owl:NamedIndividual ;
+	rdf:type :DatabaseDesigner .
+:David
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Manager .
+:Evelyn
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Director .
+
+
+
+
+Second Attempt
+@prefix :	<http://example.org/Organization#> .
+@prefix mlt: <http://example.org/mlt#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+:OrganizationOntology rdf:type owl:Ontology .
+#################################################################
+# MLT Core Classes
+#################################################################
+mlt:1stOrderClass rdf:type owl:Class .
+mlt:2ndOrderClass rdf:type owl:Class .
+mlt:3rdOrderClass rdf:type owl:Class .
+mlt:TokenIndividual rdf:type owl:Class .
+#################################################################
+# Domain Classes
+#################################################################
+:OrganizationalClassification rdf:type owl:Class .
+:BusinessRole rdf:type owl:Class .
+:ManagementRole rdf:type owl:Class .
+:EmployeeType rdf:type owl:Class .
+:Employee rdf:type owl:Class .
+:Programmer rdf:type owl:Class .
+:SoftwareDesigner rdf:type owl:Class .
+:DatabaseDesigner rdf:type owl:Class .
+:Manager rdf:type owl:Class .
+:Director rdf:type owl:Class .
+:BusinessRoleType rdf:type owl:Class .
+:ManagementRoleType rdf:type owl:Class .
+:EmployeeTypeCategory rdf:type owl:Class .
+#################################################################
+# Object Properties
+#################################################################
+mlt:isSubordinateOf rdf:type owl:ObjectProperty .
+mlt:isPowertypeOf rdf:type owl:ObjectProperty .
+mlt:isCharacterizationOf rdf:type owl:ObjectProperty .
+#################################################################
+# MLT Meta-Level Axioms
+#################################################################
+mlt:3rdOrderClass
+	mlt:isPowertypeOf mlt:2ndOrderClass ;
+	mlt:isCharacterizationOf mlt:2ndOrderClass ;
+	mlt:isSubordinateOf mlt:3rdOrderClass .
+mlt:2ndOrderClass
+	mlt:isPowertypeOf mlt:1stOrderClass ;
+	mlt:isCharacterizationOf mlt:1stOrderClass ;
+	mlt:isSubordinateOf mlt:2ndOrderClass .
+#################################################################
+# Third-Order Classification Types
+#################################################################
+:BusinessRoleType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :BusinessRole .
+:ManagementRoleType
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :ManagementRole .
+:EmployeeTypeCategory
+	rdf:type mlt:3rdOrderClass ;
+	mlt:isPowertypeOf :EmployeeType .
+#################################################################
+# Second-Order Organizational Classification Types
+#################################################################
+:BusinessRole
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification .
+:ManagementRole
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification ;
+	mlt:isSubordinateOf :BusinessRole .
+:EmployeeType
+	rdf:type mlt:2ndOrderClass ;
+	rdf:type :OrganizationalClassification ;
+	mlt:isCharacterizationOf :Employee .
+#################################################################
+# First-Order Organizational Types
+#################################################################
+:Employee
+	rdf:type mlt:1stOrderClass ;
+	rdfs:subClassOf mlt:TokenIndividual .
+:Programmer
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee .
+:SoftwareDesigner
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee .
+:DatabaseDesigner
+	rdf:type :BusinessRole ;
+	rdfs:subClassOf :Employee .
+:Manager
+	rdf:type :ManagementRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :Programmer .
+:Director
+	rdf:type :ManagementRole ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :Manager .
+#################################################################
+# Employee-Type Classifications
+#################################################################
+:ProgrammerType
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :Programmer .
+:SoftwareDesignerType
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :SoftwareDesigner .
+:DatabaseDesignerType
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :DatabaseDesigner .
+:ManagerType
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :Manager .
+:DirectorType
+	rdf:type :EmployeeType ;
+	rdfs:subClassOf :Employee ;
+	mlt:isCharacterizationOf :Director .
+#################################################################
+# Named Individuals
+#################################################################
+:Alice
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Programmer .
+:Bob
+	rdf:type owl:NamedIndividual ;
+	rdf:type :SoftwareDesigner .
+:Carol
+	rdf:type owl:NamedIndividual ;
+	rdf:type :DatabaseDesigner .
+:David
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Manager .
+:Evelyn
+	rdf:type owl:NamedIndividual ;
+	rdf:type :Director .
+
+
