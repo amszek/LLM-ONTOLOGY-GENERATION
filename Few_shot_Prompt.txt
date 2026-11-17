@@ -3,165 +3,111 @@
 You are given a correctly modeled example ontology and a new domain modeling task.
 The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
 Example Ontology
+
 @prefix :      <http://example.org/person#> .
 @prefix mlt:   <http://example.org/mlt#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 
+#################################################################
+# MLT Basic Types
+#################################################################
+
+mlt:TokenIndividual rdf:type owl:Class .
+
+mlt:1stOrderClass rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:2ndOrderClass rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:3rdOrderClass rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
 
 #################################################################
-# Classes
+# MLT Properties
 #################################################################
 
-:PersonType
-    rdf:type owl:Class .
+mlt:intraLevelProperty rdf:type owl:ObjectProperty .
+mlt:crossLevelProperty rdf:type owl:ObjectProperty .
 
-:PersonTypeByGender
-    rdf:type owl:Class .
+mlt:isSubordinateOf rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf mlt:intraLevelProperty .
 
-:EmployeeType
-    rdf:type owl:Class .
+mlt:isPowertypeOf rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
 
-:EmployeeRoleTypeByGender
-    rdf:type owl:Class .
-
-:Person
-    rdf:type owl:Class .
-
-:Woman
-    rdf:type owl:Class .
-
-:Man
-    rdf:type owl:Class .
-
-:Manager
-    rdf:type owl:Class .
-
-:Researcher
-    rdf:type owl:Class .
-
-:FemaleManager
-    rdf:type owl:Class .
-
-:MaleManager
-    rdf:type owl:Class .
-
-mlt:1stOrderClass
-    rdf:type owl:Class .
-
-mlt:2ndOrderClass
-    rdf:type owl:Class .
-
-mlt:3rdOrderClass
-    rdf:type owl:Class .
-
-mlt:TokenIndividual
-    rdf:type owl:Class .
-
+mlt:isCharacterizationOf rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
 
 #################################################################
-# Object Properties
+# Relationships Between MLT Basic Types
 #################################################################
-mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
-mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
-mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
+
+mlt:1stOrderClass rdf:type mlt:2ndOrderClass ;
+    mlt:isPowertypeOf mlt:TokenIndividual .
+
+mlt:2ndOrderClass rdf:type mlt:3rdOrderClass ;
+    mlt:isPowertypeOf mlt:1stOrderClass .
 
 #################################################################
 # Axioms
 #################################################################
 
-mlt:3rdOrderClass
-    mlt:isPowertypeOf mlt:2ndOrderClass ;
-    mlt:isCharacterizationOf mlt:2ndOrderClass;
-    mlt:isSubordinationOf    mlt:3rdOrderClass.
+:PersonType rdf:type mlt:2ndOrderClass ;
+    mlt:isPowertypeOf :Person .
 
-mlt:2ndOrderClass
-    mlt:isPowertypeOf mlt:1stOrderClass ;
-    mlt:isCharacterizationOf mlt:1stOrderClass .
-     mlt:isSubordinationOf    mlt:2ndOrderClass.
-  
+:PersonTypeByGender rdf:type mlt:2ndOrderClass ;
+    rdfs:subClassOf :PersonType ;
+    mlt:isCharacterizationOf :Person .
 
-:PersonType
-    rdf:type mlt:2ndOrderClass ;
-    mlt:isPowertypeOf :Person ;
-   .
+:EmployeeType rdf:type mlt:2ndOrderClass ;
+    rdfs:subClassOf :PersonType ;
+    mlt:isCharacterizationOf :Person .
 
+:EmployeeRoleTypeByGender rdf:type mlt:2ndOrderClass ;
+    rdfs:subClassOf :EmployeeType ;
+    mlt:isSubordinateOf :PersonTypeByGender .
 
-:PersonTypeByGender
-    rdf:type mlt:2ndOrderClass ;
-    rdfs: subclassof :PersonType ;
-    mlt:isCharacterizationOf
-        :Person.
+:Person rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf mlt:TokenIndividual .
 
+:Woman rdf:type mlt:1stOrderClass, 
+        rdf:type :PersonTypeByGender ;
+    rdfs:subClassOf :Person .
 
-:EmployeeType
-    rdf:type mlt:2ndOrderClass ;
-    rdfs:subclassof :PersonType ;
-    mlt:isCharacterizationOf
-        :Person.
-        
+:Man rdf:type mlt:1stOrderClass, 
+     rdf:type :PersonTypeByGender ;
+    rdfs:subClassOf :Person .
 
+:Manager rdf:type mlt:1stOrderClass, 
+              rdf:type :EmployeeType ;
+              rdfs:subClassOf :Person .
 
-:EmployeeRoleTypeByGender
-    rdf:type mlt:2ndOrderClass ;
-    rdfs:subclassof :EmployeeType ;
-    mlt:isSubordinateOf :PersonTypeByGender ;
-           
-:Person
-    rdf:type mlt:1stOrderClass .
+:Researcher rdf:type mlt:1stOrderClass, 
+            rdf:type :EmployeeType ;
+            rdfs:subClassOf :Person .
 
+:FemaleManager rdf:type mlt:1stOrderClass, 
+               rdf:type :EmployeeRoleTypeByGender ;
+               rdfs:subClassOf :Manager, 
+               rdfs:subClassOf :Woman .
 
-:Woman
-    rdf:type :PersonTypeByGender ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Person.
-
-
-:Man
-    rdf:type :PersonTypeByGender ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Person.
-
-
-:Manager
-    rdf:type :EmployeeType ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Person.
-
-
-:Researcher
-    rdf:type :EmployeeType ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Person.
-
-
-:FemaleManager
-    rdf:type :EmployeeRoleTypeByGender ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Manager ;
-    rdfs:subClassOf :Woman .
-
-
-:MaleManager
-    rdf:type :EmployeeRoleTypeByGender ;
-    rdf:type mlt:1stOrderClass ;
-    rdfs:subClassOf :Manager ;
-    rdfs:subClassOf :Man .
-
+:MaleManager rdf:type mlt:1stOrderClass, 
+             rdf:type :EmployeeRoleTypeByGender ;
+             rdfs:subClassOf :Manager, 
+            rdfs:subClassOf :Man .
 
 #################################################################
-# Individuals
+# Token Individuals
 #################################################################
 
-:Ana
-    rdf:type owl:NamedIndividual ; 
-    rdf:type :FemaleManager .
+:Ana rdf:type mlt:TokenIndividual,
+              :FemaleManager .
 
-
-:Bob
-    rdf:type owl:NamedIndividual ;
-       rdf:type :MaleManager .
+:Bob rdf:type mlt:TokenIndividual,
+              :MaleManager .
 
 
 
@@ -197,6 +143,7 @@ Do not include explanations, comments, Markdown formatting, or any text outside 
 You are given a correctly modeled example ontology and a new domain modeling task.
 The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
 Example Ontology
+
 @prefix :    <http://example.org/Taxonomy#> .
 @prefix mlt: <http://example.org/mlt#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -204,7 +151,49 @@ Example Ontology
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
 #################################################################
-# Classes
+# MLT Basic Types
+#################################################################
+
+mlt:TokenIndividual
+    rdf:type owl:Class .
+
+mlt:1stOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:2ndOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:3rdOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+#################################################################
+# MLT Properties
+#################################################################
+
+mlt:intraLevelProperty
+    rdf:type owl:ObjectProperty .
+
+mlt:crossLevelProperty
+    rdf:type owl:ObjectProperty .
+
+mlt:isSubordinateOf
+    rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf mlt:intraLevelProperty .
+
+mlt:isCharacterizationOf
+    rdf:type owl:ObjectProperty;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
+
+mlt:isPowerTypeOf
+    rdf:type owl:ObjectProperty;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
+
+
+#################################################################
+# Domain Classes
 #################################################################
 
 :TaxonomicRank   rdf:type owl:Class .
@@ -217,53 +206,37 @@ Example Ontology
 :PantheraTigris  rdf:type owl:Class .
 :PantheraLeo     rdf:type owl:Class .
 
-mlt:1stOrderClass rdf:type owl:Class .
-mlt:2ndOrderClass rdf:type owl:Class .
-mlt:3rdOrderClass rdf:type owl:Class .
-mlt:TokenIndividual rdf:type owl:Class .
-
-#################################################################
-# Object Properties
-#################################################################
-
-mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
-mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
-mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
 #################################################################
 # Axioms
 #################################################################
-mlt:3rdOrderClass
-    mlt:isPowertypeOf mlt:2ndOrderClass ;
-    mlt:isCharacterizationOf mlt:2ndOrderClass;
-    mlt:isSubordinationOf    mlt:3rdOrderClass.
-
-mlt:2ndOrderClass
-    mlt:isPowertypeOf mlt:1stOrderClass ;
-    mlt:isCharacterizationOf mlt:1stOrderClass .
-     mlt:isSubordinationOf    mlt:2ndOrderClass.
-
 
 :GenusType
     rdf:type mlt:3rdOrderClass ;
     mlt:isPowertypeOf :Genus .
 
-:SpecieType
+:SpeciesType
     rdf:type mlt:3rdOrderClass ;
-    mlt:isPowertypeOf :Species.
+    mlt:isPowertypeOf :Species .
+
 
 :Genus
     rdf:type mlt:2ndOrderClass ;
-    rdf:type :TaxonomicRank .
+    rdf:type :TaxonomicRank ;
+    rdfs:subClassOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf :Organism .
 
 :Species
     rdf:type mlt:2ndOrderClass ;
     rdf:type :TaxonomicRank ;
-    mlt:isSubordinateOf :Genus ;
-    mlt:isCharacterizationOf :Organism.
+    rdfs:subClassOf mlt:1stOrderClass ;
+    mlt:isSubordinateTo :Genus ;
+    mlt:isCharacterizationOf :Organism .
+
 
 :Organism
-    rdf:type mlt:1stOrderClass .
-    rdfs:subClassOf  mlt:TokenIndividual
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf mlt:TokenIndividual .
+
 
 :Panthera
     rdf:type :Genus ;
@@ -272,30 +245,27 @@ mlt:2ndOrderClass
 :PantheraSpecies
     rdf:type :Species ;
     rdfs:subClassOf :Organism ;
-    mlt:isCharacterization :Panthera.
+    mlt:isCharacterizationOf :Panthera .
 
 :PantheraOnca
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
+    rdfs:subClassOf :Panthera .
 
 :PantheraTigris
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
+    rdfs:subClassOf :Panthera .
 
 :PantheraLeo
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
- 
+    rdfs:subClassOf :Panthera .
+
 #################################################################
-#  Individual
+# Token Individual
 #################################################################
 
 :Cecil
-    rdf:type owl:NamedIndividual ;
-       rdf:type :PantheraLeo .
-
-
-
+    rdf:type mlt:TokenIndividual ;
+    rdf:type :PantheraLeo .
 
 
 
@@ -335,6 +305,7 @@ Do not include explanations, comments, Markdown formatting, or any text outside 
 You are given a correctly modeled example ontology and a new domain modeling task.
 The example ontology demonstrates how Multi-Level Theory (MLT) concepts are represented in OWL 2 using RDF/Turtle. Use the example only to learn the modeling approach and ontology structure. Do not copy domain-specific concepts from the example. Apply the same multi-level modeling principles to the new domain.
 Example Ontology
+
 @prefix :    <http://example.org/Taxonomy#> .
 @prefix mlt: <http://example.org/mlt#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -342,7 +313,49 @@ Example Ontology
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
 #################################################################
-# Classes
+# MLT Basic Types
+#################################################################
+
+mlt:TokenIndividual
+    rdf:type owl:Class .
+
+mlt:1stOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:2ndOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+mlt:3rdOrderClass
+    rdf:type owl:Class ;
+    rdfs:subClassOf owl:Class .
+
+#################################################################
+# MLT Properties
+#################################################################
+
+mlt:intraLevelProperty
+    rdf:type owl:ObjectProperty .
+
+mlt:crossLevelProperty
+    rdf:type owl:ObjectProperty .
+
+mlt:isSubordinateOf
+    rdf:type owl:ObjectProperty ;
+    rdfs:subPropertyOf mlt:intraLevelProperty .
+
+mlt:isCharacterizationOf
+    rdf:type owl:ObjectProperty;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
+
+mlt:isPowerTypeOf
+    rdf:type owl:ObjectProperty;
+    rdfs:subPropertyOf mlt:crossLevelProperty .
+
+
+#################################################################
+# Domain Classes
 #################################################################
 
 :TaxonomicRank   rdf:type owl:Class .
@@ -355,53 +368,37 @@ Example Ontology
 :PantheraTigris  rdf:type owl:Class .
 :PantheraLeo     rdf:type owl:Class .
 
-mlt:1stOrderClass rdf:type owl:Class .
-mlt:2ndOrderClass rdf:type owl:Class .
-mlt:3rdOrderClass rdf:type owl:Class .
-mlt:TokenIndividual rdf:type owl:Class .
-
-#################################################################
-# Object Properties
-#################################################################
-
-mlt:isSubordinateOf       rdf:type owl:ObjectProperty .
-mlt:isPowertypeOf         rdf:type owl:ObjectProperty .
-mlt:isCharacterizationOf  rdf:type owl:ObjectProperty .
 #################################################################
 # Axioms
 #################################################################
-mlt:3rdOrderClass
-    mlt:isPowertypeOf mlt:2ndOrderClass ;
-    mlt:isCharacterizationOf mlt:2ndOrderClass;
-    mlt:isSubordinationOf    mlt:3rdOrderClass.
-
-mlt:2ndOrderClass
-    mlt:isPowertypeOf mlt:1stOrderClass ;
-    mlt:isCharacterizationOf mlt:1stOrderClass .
-     mlt:isSubordinationOf    mlt:2ndOrderClass.
-
 
 :GenusType
     rdf:type mlt:3rdOrderClass ;
     mlt:isPowertypeOf :Genus .
 
-:SpecieType
+:SpeciesType
     rdf:type mlt:3rdOrderClass ;
-    mlt:isPowertypeOf :Species.
+    mlt:isPowertypeOf :Species .
+
 
 :Genus
     rdf:type mlt:2ndOrderClass ;
-    rdf:type :TaxonomicRank .
+    rdf:type :TaxonomicRank ;
+    rdfs:subClassOf mlt:1stOrderClass ;
+    mlt:isCharacterizationOf :Organism .
 
 :Species
     rdf:type mlt:2ndOrderClass ;
     rdf:type :TaxonomicRank ;
-    mlt:isSubordinateOf :Genus ;
-    mlt:isCharacterizationOf :Organism.
+    rdfs:subClassOf mlt:1stOrderClass ;
+    mlt:isSubordinateTo :Genus ;
+    mlt:isCharacterizationOf :Organism .
+
 
 :Organism
-    rdf:type mlt:1stOrderClass .
-    rdfs:subClassOf  mlt:TokenIndividual
+    rdf:type mlt:1stOrderClass ;
+    rdfs:subClassOf mlt:TokenIndividual .
+
 
 :Panthera
     rdf:type :Genus ;
@@ -410,27 +407,28 @@ mlt:2ndOrderClass
 :PantheraSpecies
     rdf:type :Species ;
     rdfs:subClassOf :Organism ;
-    mlt:isCharacterization :Panthera.
+    mlt:isCharacterizationOf :Panthera .
 
 :PantheraOnca
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
+    rdfs:subClassOf :Panthera .
 
 :PantheraTigris
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
+    rdfs:subClassOf :Panthera .
 
 :PantheraLeo
     rdf:type :PantheraSpecies ;
-    rdfs:subClassOf :Panthera ;
- 
+    rdfs:subClassOf :Panthera .
+
 #################################################################
-#  Individual
+# Token Individual
 #################################################################
 
 :Cecil
-    rdf:type owl:NamedIndividual ;
-       rdf:type :PantheraLeo .
+    rdf:type mlt:TokenIndividual ;
+    rdf:type :PantheraLeo .
+
 
 
 
